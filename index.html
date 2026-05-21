@@ -116,9 +116,69 @@
         .sys-table th { background: rgba(0, 240, 255, 0.1); border-bottom: 1px solid var(--sys-cyan); color: var(--sys-cyan); }
         .sys-table td { border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
         
+        /* ==========================================
+   وضع غروب الشمس (النهاري)
+   ========================================== */
+body.light-mode {
+    /* تغيير المتغيرات الأساسية للألوان */
+    --sys-cyan: #005bb5; /* أزرق نيون غامق */
+    --sys-cyan-glow: rgba(0, 91, 181, 0.4);
+    --sys-purple: #ff5e00; /* برتقالي نيون غامق (غروب الشمس) */
+    --sys-purple-glow: rgba(255, 94, 0, 0.4);
+    --sys-bg-dark: #fffafa; /* خلفية بيضاء مائلة قليلاً للدفء */
+    --sys-panel: rgba(255, 250, 245, 0.9); /* لوحات شفافة بخلفية بيضاء */
+    --sys-border: rgba(255, 94, 0, 0.5); /* حدود برتقالية */
+    
+    color: #111827 !important; /* تحويل النص الافتراضي للأسود */
+    background-color: var(--sys-bg-dark);
+    background-image: 
+        radial-gradient(circle at 15% 50%, var(--sys-purple-glow) 0%, transparent 35%),
+        radial-gradient(circle at 85% 30%, var(--sys-cyan-glow) 0%, transparent 35%);
+}
+
+/* إجبار كلاسات Tailwind (البيضاء والرمادية) لتصبح سوداء في الوضع النهاري */
+body.light-mode .text-white, 
+body.light-mode .text-slate-200, 
+body.light-mode .text-slate-300, 
+body.light-mode .text-slate-400 {
+    color: #1f2937 !important; 
+}
+
+/* إضاءة النصوص الملونة (Glow) */
+body.light-mode .sl-glow-text {
+    text-shadow: 0 0 5px rgba(255, 94, 0, 0.3) !important; /* توهج برتقالي خفيف */
+}
+
+/* تغيير خلفيات اللوحات الداكنة (Slate/Black) لتناسب غروب الشمس */
+body.light-mode .bg-slate-900,
+body.light-mode .bg-slate-950,
+body.light-mode .bg-black\/40,
+body.light-mode .bg-black\/50,
+body.light-mode .bg-\[\#02040a\] {
+    background-color: rgba(255, 245, 235, 0.8) !important;
+    border-color: rgba(255, 94, 0, 0.3) !important;
+}
+
+/* تعديل خلفية حقل الإدخال */
+body.light-mode input, body.light-mode select {
+    color: #111827 !important;
+}
+body.light-mode input::placeholder {
+    color: #6b7280 !important;
+}
+
+/* تعديل خطوط الجداول */
+body.light-mode .sys-table td { 
+    border-bottom-color: rgba(0, 0, 0, 0.1); 
+}
     </style>
 </head>
 <body class="p-2 md:p-6 relative text-slate-200">
+        <!-- Background Effects -->
+    <div class="bg-grid"></div>
+    <div id="particles"></div>
+
+
 <div id="loadingScreen" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#02040a]">
     <div class="sys-font text-3xl font-black text-[var(--sys-cyan)] animate-pulse mb-6 tracking-widest uppercase">
         SYNCHRONIZING MONARCH DATA...
@@ -241,6 +301,10 @@
                 </div>
             </div>
         </div>
+                <div class="fixed top-4 right-4 z-50 flex gap-2">
+    <button onclick="SystemControls.toggleTheme()" class="p-2 bg-slate-900 border border-slate-700 hover:border-[var(--sys-cyan)] text-white rounded-full transition-all" id="nav-aiChat">
+        <span id="themeIcon">🌙</span>
+    </button></div>
 
         <header class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6">
             <div>
@@ -1005,6 +1069,43 @@ To achieve the 5 cm mark in 6 months, focus your swimming on "in-water stretchin
             document.getElementById('timerModal').classList.toggle('hidden');
         }
     };
+    // ==========================================
+// SYSTEM CONTROLS (Theme Toggle)
+// ==========================================
+const SystemControls = {
+    toggleTheme() {
+        const body = document.body;
+        body.classList.toggle('light-mode');
+        const isLight = body.classList.contains('light-mode');
+        
+        // تغيير الأيقونة من هلال إلى شمس والعكس
+        const icon = document.getElementById('themeIcon');
+        if (icon) {
+            icon.textContent = isLight ? '☀️' : '🌙';
+        }
+        
+        // حفظ تفضيلات المستخدم حتى لا تختفي عند تحديث الصفحة
+        localStorage.setItem('MONARCH_THEME', isLight ? 'light' : 'dark');
+        
+        // تشغيل صوت النظام عند الضغط
+        if (typeof SoundEffects !== 'undefined') SoundEffects.playSystemClick();
+    },
+
+    initTheme() {
+        // التحقق من الوضع المحفوظ عند فتح الموقع
+        const savedTheme = localStorage.getItem('MONARCH_THEME');
+        if (savedTheme === 'light') {
+            document.body.classList.add('light-mode');
+            const icon = document.getElementById('themeIcon');
+            if (icon) icon.textContent = '☀️';
+        }
+    }
+};
+
+// تفعيل استدعاء الـ Theme عند تحميل الصفحة
+window.addEventListener('DOMContentLoaded', () => {
+    SystemControls.initTheme();
+});
 
     // ==========================================
     // SOUND EFFECTS & TONE.JS INTEGRATION
@@ -1923,6 +2024,136 @@ penaltyRegistry: [],
 
         PlayerState.updateUI(); 
     });
+        // ==================== APP CONTROLS ====================
+    const App = {
+        init() {
+            if(!isDark) document.body.classList.add('light-mode');
+            document.getElementById('themeIcon').className = isDark ? 'fas fa-moon' : 'fas fa-sun';
+            this.applyLang();
+            Audio.init();
+            Env.init();
+            Timer.init();
+            Quotes.init();
+            UI.refresh();
+
+            document.getElementById('taskInput').addEventListener('keypress', e=>{
+                if(e.key==='Enter') Actions.addTask();
+            });
+
+            // Particles
+            for(let i=0;i<40;i++) {
+                const p = document.createElement('div'); p.className='particle';
+                p.style.left = Math.random()*100+'%';
+                p.style.animationDuration = (15+Math.random()*20)+'s';
+                p.style.animationDelay = Math.random()*15+'s';
+                document.getElementById('particles').appendChild(p);
+            }
+        },
+
+        toggleLang() {
+            currentLang = currentLang==='ar'?'en':'ar';
+            document.documentElement.lang = currentLang;
+            document.documentElement.dir = currentLang==='ar'?'rtl':'ltr';
+            localStorage.setItem('sl_lang', currentLang);
+            this.applyLang();
+            Toast.show('languageChanged', 'fa-language');
+        },
+
+        applyLang() {
+            document.querySelectorAll('[data-i18n]').forEach(el=>{
+                const key = el.getAttribute('data-i18n');
+                if(i18n[currentLang][key]) el.textContent = i18n[currentLang][key];
+            });
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el=>{
+                const key = el.getAttribute('data-i18n-placeholder');
+                if(i18n[currentLang][key]) el.placeholder = i18n[currentLang][key];
+            });
+            document.getElementById('langBtn').textContent = currentLang==='ar'?'EN':'AR';
+            UI.refresh();
+        },
+
+        toggleTheme() {
+            isDark = !isDark;
+            document.body.classList.toggle('light-mode', !isDark);
+            document.getElementById('themeIcon').className = isDark ? 'fas fa-moon' : 'fas fa-sun';
+            localStorage.setItem('sl_theme', isDark?'dark':'light');
+            Toast.show('themeChanged', 'fa-palette');
+        },
+
+        toggleSound() {
+            State.sound = !State.sound;
+            localStorage.setItem('SL_SOUND', State.sound);
+            document.getElementById('soundIcon').className = State.sound ? 'fas fa-volume-up' : 'fas fa-volume-mute';
+        }
+    };
+
+    // Start with Login
+    window.addEventListener('DOMContentLoaded', ()=>Login.init());
+        const Actions = {
+        addTask() {
+            Audio.play('click');
+            const inp = document.getElementById('taskInput');
+            const prio = document.getElementById('prioritySelect').value;
+            const isBoss = document.getElementById('bossCheck').checked;
+            if(!inp.value.trim()) return;
+
+            const task = {
+                id: Date.now(), text: inp.value, priority: prio, completed: false,
+                boss: isBoss, bossTimer: isBoss ? 60 : null, createdAt: new Date().toISOString()
+            };
+            State.tasks.unshift(task);
+            inp.value=''; document.getElementById('bossCheck').checked=false;
+            State.save(); UI.refresh();
+            if(isBoss) Toast.show('bossTimerStarted', 'fa-skull', 'error');
+        },
+        toggleTask(id) {
+            const t = State.tasks.find(x=>x.id===id);
+            if(!t) return;
+            const oldLvl = LevelSys.getProgress().level;
+            t.completed = !t.completed;
+            if(t.completed) {
+                State.xp += State.weights[t.priority] * (t.boss?2:1);
+                Audio.play('success');
+                Toast.show('taskCompleted', 'fa-check-circle', 'success');
+                confetti({particleCount:80, spread:60, origin:{y:0.7}, colors:['#00f0ff','#9d4edd']});
+            } else {
+                State.xp = Math.max(0, State.xp - State.weights[t.priority] * (t.boss?2:1));
+                Audio.play('click');
+            }
+            State.save(); UI.refresh();
+            LevelSys.checkLevelUp(oldLvl);
+        },
+        deleteTask(id) {
+            Audio.play('click');
+            State.tasks = State.tasks.filter(t=>t.id!==id);
+            State.save(); UI.refresh();
+            Toast.show('taskDeleted', 'fa-trash');
+        },
+        enterBoss(id) {
+            const t = State.tasks.find(x=>x.id===id);
+            if(!t || t.completed) return;
+            Audio.play('boss');
+            const mins = t.bossTimer || 60;
+            Timer.default = mins*60; Timer.time = mins*60; Timer.reset(); Timer.toggle();
+            Toast.show('bossTimerStarted', 'fa-fire', 'error');
+            Router.navigate('all');
+        },
+        upgradeStat(key) {
+            if(State.statPoints<=0) { Toast.show('noPoints', 'fa-exclamation-circle', 'error'); return; }
+            State.statPoints--;
+            State.stats[key].val++;
+            const linked = State.skills.filter(s=>s.stat===key && s.level < s.max);
+            if(linked.length>0 && Math.random()>0.5) {
+                const sk = linked[Math.floor(Math.random()*linked.length)];
+                sk.level++;
+                Toast.show('statUpgraded', 'fa-arrow-up', 'success');
+            }
+            State.save(); UI.refresh(); Audio.play('success');
+        }
+    };
+
+
+
     </script>
 </body>
 </html>
