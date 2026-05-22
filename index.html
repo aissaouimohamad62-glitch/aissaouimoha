@@ -171,6 +171,64 @@ body.light-mode input::placeholder {
 body.light-mode .sys-table td { 
     border-bottom-color: rgba(0, 0, 0, 0.1); 
 }
+/* ==========================================
+           الهالة 2: هالة الدم القرمزي (Crimson Aura)
+           ========================================== */
+        body.theme-crimson {
+            --sys-cyan: #ff003c; /* أحمر قرمزي مضيء */
+            --sys-cyan-glow: rgba(255, 0, 60, 0.8);
+            --sys-purple: #ffffff; /* أبيض ناصع */
+            --sys-purple-glow: rgba(255, 255, 255, 0.5);
+            --sys-bg-dark: #050000; /* أسود دموي غامق */
+            --sys-panel: rgba(15, 0, 0, 0.85);
+            --sys-border: rgba(255, 0, 60, 0.5);
+        }
+        body.theme-crimson .sl-glow-text { text-shadow: 0 0 15px #ff003c !important; }
+
+        /* ==========================================
+           الهالة 3: البرق الناري الأزرق (Blue Lightning Fire)
+           ========================================== */
+        body.theme-blue-fire {
+            --sys-cyan: #0066ff; /* أزرق ناري غامق */
+            --sys-cyan-glow: rgba(0, 102, 255, 0.8);
+            --sys-purple: #00d4ff; /* أزرق كهربائي فاتح */
+            --sys-purple-glow: rgba(0, 212, 255, 0.8);
+            --sys-bg-dark: #f0f4f8; /* أبيض رمادي للخلفية */
+            --sys-panel: rgba(255, 255, 255, 0.9);
+            --sys-border: rgba(0, 102, 255, 0.6);
+            color: #0f172a !important; /* تحويل النصوص للداكن للرؤية */
+        }
+        /* إجبار النصوص البيضاء على أن تصبح داكنة في الهالة البيضاء */
+        body.theme-blue-fire .text-white, 
+        body.theme-blue-fire .text-slate-200, 
+        body.theme-blue-fire .text-slate-300, 
+        body.theme-blue-fire .text-slate-400 { color: #1e293b !important; }
+        
+        body.theme-blue-fire .bg-slate-900,
+        body.theme-blue-fire .bg-slate-950,
+        body.theme-blue-fire .bg-black\/40,
+        body.theme-blue-fire .bg-black\/50 {
+            background-color: rgba(240, 248, 255, 0.8) !important;
+            border-color: rgba(0, 102, 255, 0.3) !important;
+        }
+
+        /* مؤثرات شرارات النار والكهرباء (Sparks) */
+        @keyframes shoot-spark {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-100vh) translateX(20px) scale(0); opacity: 0; }
+        }
+        .lightning-spark {
+            position: fixed;
+            bottom: -10px;
+            width: 3px;
+            height: 15px;
+            background: #00d4ff; /* لون الشرارة */
+            box-shadow: 0 0 10px #0066ff, 0 0 20px #00d4ff;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+            animation: shoot-spark linear infinite;
+        }
     </style>
 </head>
 <body class="p-2 md:p-6 relative text-slate-200">
@@ -301,10 +359,16 @@ body.light-mode .sys-table td {
                 </div>
             </div>
         </div>
-                <div class="fixed top-4 right-4 z-50 flex gap-2">
-    <button onclick="SystemControls.toggleTheme()" class="p-2 bg-slate-900 border border-slate-700 hover:border-[var(--sys-cyan)] text-white rounded-full transition-all" id="nav-aiChat">
-        <span id="themeIcon">🌙</span>
-    </button></div>
+                <div class="fixed top-4 right-4 z-50 flex gap-3 items-center">
+    <a href="https://aissaouimohamad62-glitch.github.io/proto/" target="_blank" class="px-4 py-2 bg-slate-900/80 backdrop-blur border border-slate-700 hover:border-[var(--sys-cyan)] text-white text-xs font-black uppercase tracking-widest rounded flex items-center gap-2 transition-all group shadow-[0_0_10px_rgba(0,0,0,0.5)]">
+        <span>MY PORTFOLIO</span>
+        <span class="group-hover:animate-pulse text-[var(--sys-cyan)]">🌐</span>
+    </a>
+    
+    <button onclick="SystemControls.cycleTheme()" class="w-10 h-10 flex items-center justify-center bg-slate-900/80 backdrop-blur border border-slate-700 hover:border-[var(--sys-cyan)] text-white rounded-full transition-all group shadow-[0_0_10px_rgba(0,0,0,0.5)]" title="تغيير هالة النظام">
+        <span id="themeIcon" class="text-lg transition-transform group-hover:rotate-180 duration-500">🌌</span>
+    </button>
+</div>
 
         <header class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6">
             <div>
@@ -510,7 +574,6 @@ body.light-mode .sys-table td {
                                     <tr><td class="p-3 sys-font font-bold text-slate-500">12:00 - 13:00</td><td class="p-3 font-bold text-slate-400">Grand Break</td><td class="p-3">Dhuhr + Protein Lunch</td></tr>
                                     <tr><td class="p-3 sys-font font-bold text-emerald-400">13:00 - 15:00</td><td class="p-3 font-bold text-emerald-400">Applied Lab</td><td class="p-3">Real-world AI Projects & Software Integration</td></tr>
                                     <tr><td class="p-3 sys-font font-bold text-rose-400">15:00 - 16:30</td><td class="p-3 font-bold text-rose-400">Advanced PPL</td><td class="p-3">Push, Pull, Legs + Calisthenics</td></tr>
-                                    <tr><td class="p-3 sys-font font-bold text-rose-400">16:30 - 17:30</td><td class="p-3 font-bold text-rose-400">Adhkar</td><td class="p-3">Adhkar PM</td></tr>
                                     <tr><td class="p-3 sys-font font-bold">17:30 - 19:30</td><td class="p-3 font-bold text-amber-400">Experimental Sciences</td><td class="p-3">Math, Physics, Science (Academic Focus) / Sun: Math / Mon: Natural Sciences / Tue: Physics / Wed: This week's Math review</td></tr>
                                     <tr><td class="p-3 sys-font font-bold">17:30 - 19:30</td><td class="p-3 font-bold text-amber-400">Activity and Meal Hour</td><td class="p-3">Maghrib Prayer + Sheikh Al-Raslan + Light Dinner + Specified Outdoor Sports.</td></tr>
                                     <tr><td class="p-3 sys-font font-bold text-sky-400">20:30 - 21:30</td><td class="p-3 font-bold text-sky-400">Mental & Physical Elevation</td><td class="p-3">Books, Documentaries + Brain Games + Physical Sports</td></tr>
@@ -593,7 +656,6 @@ Saturday | Football | Self-Development (Weekly Evaluation) | Six Pack Abs . Tric
 <br>
 • 2-hour Memorization Marathon: (History & Geography + Islamic Sciences Curriculum) using mind maps.
 <br>
-                                Adhkar PM <br>
 • 2-hour Language Skills: (French, Arabic, and English Curriculum) - processing grammar as if it were "programming logic".
 <br>
 • Reading books + Dopamine Detox (1.5 hours)
@@ -619,13 +681,9 @@ Saturday | Football | Self-Development (Weekly Evaluation) | Six Pack Abs . Tric
 <br>
 • 4 continuous hours: Everything related to programming and project monitoring: reviewing AiMoha codes and server updates + competitor analysis, monitoring Instagram and YouTube, drawing inspiration, web building, and monetization.
 <br>
-                                Adhkar PM <br>
-                            •    Shaolin fighter body building
-                                <br>
-                                
 • Dual N-Back Session (intense 20-minute mental exercise) + calm walk + Digital Book Creation
 <br>
-• Watch basketball skills
+Watch basketball skills
 
                             </div>
                             <div class="p-4 bg-slate-900 border-l-4 border-sky-500">
@@ -644,7 +702,6 @@ Saturday | Football | Self-Development (Weekly Evaluation) | Six Pack Abs . Tric
 <br>
 • Self-Development (Weekly evaluation) (45 mins - 1 hour)
 <br>
-                                Adhkar PM <br>
 • Monitoring developed projects / Web development (1 hour)
 <br>
 • 20:30 - 21:30: Updating the "Hard Tasks" list for the upcoming week.
@@ -1079,36 +1136,83 @@ To achieve the 5 cm mark in 6 months, focus your swimming on "in-water stretchin
     // ==========================================
 // SYSTEM CONTROLS (Theme Toggle)
 // ==========================================
-const SystemControls = {
-    toggleTheme() {
-        const body = document.body;
-        body.classList.toggle('light-mode');
-        const isLight = body.classList.contains('light-mode');
-        
-        // تغيير الأيقونة من هلال إلى شمس والعكس
-        const icon = document.getElementById('themeIcon');
-        if (icon) {
-            icon.textContent = isLight ? '☀️' : '🌙';
-        }
-        
-        // حفظ تفضيلات المستخدم حتى لا تختفي عند تحديث الصفحة
-        localStorage.setItem('MONARCH_THEME', isLight ? 'light' : 'dark');
-        
-        // تشغيل صوت النظام عند الضغط
-        if (typeof SoundEffects !== 'undefined') SoundEffects.playSystemClick();
-    },
+// ==========================================
+    // SYSTEM CONTROLS (Aura & Theme Cycler)
+    // ==========================================
+    const SystemControls = {
+        themes: ['default', 'theme-crimson', 'theme-blue-fire'],
+        currentThemeIndex: 0,
 
-    initTheme() {
-        // التحقق من الوضع المحفوظ عند فتح الموقع
-        const savedTheme = localStorage.getItem('MONARCH_THEME');
-        if (savedTheme === 'light') {
-            document.body.classList.add('light-mode');
+        cycleTheme() {
+            const body = document.body;
+            // تنظيف الهالات السابقة
+            body.classList.remove('theme-crimson', 'theme-blue-fire', 'light-mode');
+            
+            // الانتقال للهالة التالية
+            this.currentThemeIndex = (this.currentThemeIndex + 1) % this.themes.length;
+            const newTheme = this.themes[this.currentThemeIndex];
+            
+            if (newTheme !== 'default') {
+                body.classList.add(newTheme);
+            }
+
+            // تحديث الأيقونة لتناسب الهالة
             const icon = document.getElementById('themeIcon');
-            if (icon) icon.textContent = '☀️';
-        }
-    }
-};
+            if (icon) {
+                if (newTheme === 'default') icon.textContent = '🌌'; // ظلال
+                else if (newTheme === 'theme-crimson') icon.textContent = '🩸'; // دموي
+                else if (newTheme === 'theme-blue-fire') icon.textContent = '⚡'; // برق ناري
+            }
 
+            // حفظ الهالة وإطلاق تأثير الصوت
+            localStorage.setItem('MONARCH_THEME', newTheme);
+            if (typeof SoundEffects !== 'undefined') SoundEffects.playSystemClick();
+            
+            // إدارة تشغيل/إيقاف تأثير الشرارات
+            this.manageSparks(newTheme === 'theme-blue-fire');
+        },
+
+        initTheme() {
+            const savedTheme = localStorage.getItem('MONARCH_THEME') || 'default';
+            this.currentThemeIndex = this.themes.indexOf(savedTheme) !== -1 ? this.themes.indexOf(savedTheme) : 0;
+            
+            if (savedTheme !== 'default') {
+                document.body.classList.add(savedTheme);
+            }
+
+            const icon = document.getElementById('themeIcon');
+            if (icon) {
+                if(savedTheme === 'default') icon.textContent = '🌌';
+                else if(savedTheme === 'theme-crimson') icon.textContent = '🩸';
+                else if(savedTheme === 'theme-blue-fire') icon.textContent = '⚡';
+            }
+
+            this.manageSparks(savedTheme === 'theme-blue-fire');
+        },
+
+        manageSparks(isActive) {
+            let container = document.getElementById('sparks-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'sparks-container';
+                document.body.appendChild(container);
+            }
+            
+            container.innerHTML = ''; // مسح الشرارات القديمة
+
+            if (isActive) {
+                // توليد 40 شرارة كهربائية نارية بأحجام وسرعات عشوائية
+                for(let i=0; i < 40; i++) {
+                    const spark = document.createElement('div');
+                    spark.className = 'lightning-spark';
+                    spark.style.left = Math.random() * 100 + 'vw';
+                    spark.style.animationDuration = (Math.random() * 2 + 0.5) + 's';
+                    spark.style.animationDelay = Math.random() * 2 + 's';
+                    container.appendChild(spark);
+                }
+            }
+        }
+    };
 // تفعيل استدعاء الـ Theme عند تحميل الصفحة
 window.addEventListener('DOMContentLoaded', () => {
     SystemControls.initTheme();
@@ -2102,6 +2206,7 @@ const QuestSystem = {
 </script>
 </body>
 </html>
+
 
 
 
