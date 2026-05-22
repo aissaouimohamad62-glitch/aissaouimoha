@@ -433,7 +433,7 @@ body.light-mode .sys-table td {
     <select id="statSelect" class="bg-[var(--sys-bg-dark)] sys-font font-bold px-3 py-2 border border-[var(--sys-purple)] border-opacity-40 outline-none text-[var(--sys-purple)] text-sm">
         <option value="int">🧠 INT (Programming, Math, AI)</option>
         <option value="str">💪 STR (Push, Pull, Calisthenics)</option>
-        <option value="vit">🛡️ VIT (Legs, Endurance, Swimming  )</option>
+        <option value="vit">🛡️ VIT (Legs, Endurance, Swimming )</option>
         <option value="agi">⚡ AGI (Muay Thai, Football)</option>
         <option value="sen">👁️ SEN (Languages, Editing, Reading , Quran )</option>
     </select>
@@ -1204,7 +1204,7 @@ window.addEventListener('DOMContentLoaded', () => {
             this.updateUI(); 
         },
 
-        updateUI() {
+   updateUI() {
             if(document.getElementById('stat-str')) document.getElementById('stat-str').textContent = this.data.stats.str; 
             if(document.getElementById('stat-vit')) document.getElementById('stat-vit').textContent = this.data.stats.vit; 
             if(document.getElementById('stat-agi')) document.getElementById('stat-agi').textContent = this.data.stats.agi; 
@@ -1214,6 +1214,11 @@ window.addEventListener('DOMContentLoaded', () => {
             if(document.getElementById('availablePoints')) document.getElementById('availablePoints').textContent = this.data.ap; 
             if(document.getElementById('currentLevel')) document.getElementById('currentLevel').textContent = this.data.level; 
             if(document.getElementById('stat-xp')) document.getElementById('stat-xp').textContent = this.data.xp; 
+
+            // ===== الكود الجديد لتفعيل AUTHORITY و LETHALITY =====
+            if(document.getElementById('stat-weight')) document.getElementById('stat-weight').textContent = this.data.authority || 0;
+            if(document.getElementById('stat-percent')) document.getElementById('stat-percent').textContent = `${this.data.lethality || 0}%`;
+            // ====================================================
 
             const nextLevelXP = this.data.level * 100; 
             if(document.getElementById('xpText')) document.getElementById('xpText').textContent = `${this.data.xp} / ${nextLevelXP}`; 
@@ -1315,184 +1320,157 @@ window.addEventListener('DOMContentLoaded', () => {
     // ==========================================
     // QUEST SYSTEM
     // ==========================================
-    const QuestSystem = {
-        penaltyRegistry: [],
+const QuestSystem = {
+    // 1. ميزة إضافة مهمة جديدة وتصنيفها
+    addTask() {
+        if(window.SoundEffects) SoundEffects.playClick();
+        const inp = document.getElementById('taskInput');
+        const prio = document.getElementById('prioritySelect').value;
+        const statSelect = document.getElementById('statSelect') ? document.getElementById('statSelect').value : 'int';
         
+        if(!inp || !inp.value.trim()) return;
 
-        // إضافة داخل كائن QuestSystem
-failTask(id) {
-    const taskIndex = this.tasks.findIndex(t => t.id === id);
-    if (taskIndex === -1) return;
+        const task = {
+            id: Date.now(), 
+            text: inp.value.trim(), 
+            priority: prio, 
+            completed: false,
+            stat: statSelect,
+            createdAt: new Date().toISOString()
+        };
 
-    const task = this.tasks[taskIndex];
-    task.failed = true; // علامة الفشل
-    
-    // إنشاء عقوبة (عشوائية أو ثابتة)
-    const penaltyTask = {
-        id: Date.now() + 1,
-        text: `PENALTY: ${task.text} (Remedial Action)`,
-        type: 'penalty',
-        originalTask: task.text,
-        completed: false
-    };
+        this.tasks.unshift(task);
+        inp.value = ''; 
+        this.save(); 
+        this.render();
+        if(window.PlayerState) PlayerState.updateUI();
+        Toast.show('Quest deployed to system window', 'success');
+    },
 
-    // نقل المهمة من الـ Tasks إلى الـ Penalty Registry
-    this.tasks.splice(taskIndex, 1);
-    this.penaltyRegistry.push(penaltyTask);
-    
-    // تقليل نقاط الحيوية (VIT) كعقاب فوري
-    PlayerState.data.stats.vit = Math.max(0, PlayerState.data.stats.vit - 1);
-    
-    this.save();
-    Toast.show('Task Failed. Penalty enforced.', 'error');
-},
+    // 2. ميزة إنهاء المهمة وحساب الـ AUTHORITY والـ XP والذهب والخصائص
+    completeTask(id) {
+        const taskIndex = this.tasks.findIndex(t => t.id === id); 
+        if (taskIndex === -1 || this.tasks[taskIndex].completed) return; 
 
-renderPenalties() {
-    const container = document.getElementById('penaltyContainer');
-    const zone = document.getElementById('penaltyZone');
-    container.innerHTML = '';
-    
-    if (this.penaltyRegistry.length > 0) {
-        zone.classList.remove('hidden');
-        document.getElementById('penaltyCount').textContent = this.penaltyRegistry.length;
+        const task = this.tasks[taskIndex]; 
+        task.completed = true; 
         
-        this.penaltyRegistry.forEach(p => {
-            const div = document.createElement('div');
-            div.className = 'p-3 bg-rose-950/20 border border-rose-900/50 flex justify-between items-center';
-            div.innerHTML = `
-                <span class="text-rose-400 font-medium text-sm">${p.text}</span>
-                <button onclick="QuestSystem.clearPenalty(${p.id})" class="text-xs bg-rose-600 px-2 py-1 hover:bg-rose-500">CLEAR</button>
-            `;
-            container.appendChild(div);
-        });
-    } else {
-        zone.classList.add('hidden');
-    }
-},
+        let xpReward = task.priority === 'high' ? 100 : task.priority === 'medium' ? 50 : 20; 
+        let goldReward = task.priority === 'high' ? 30 : task.priority === 'medium' ? 15 : 5; 
+        let authorityReward = task.priority === 'high' ? 10 : task.priority === 'medium' ? 5 : 2;
 
-penaltyRegistry: [],
-        tasks: [], 
-        penaltyRegistry: [],
-        
-
-        init() {
-            const savedTasks = localStorage.getItem('MONARCH_TASKS'); 
-            if (savedTasks) this.tasks = JSON.parse(savedTasks); 
-            this.render(); 
-        },
-
-        addTask() {
-            const input = document.getElementById('taskInput'); 
-            const text = input.value.trim(); 
-            const stat = document.getElementById('statSelect') ? document.getElementById('statSelect').value : 'int'; 
-            const priority = document.getElementById('prioritySelect') ? document.getElementById('prioritySelect').value : 'medium'; 
-
-            if (!text) return; 
-            const newTask = {
-                id: Date.now(), 
-                text: text, 
-                stat: stat, 
-                priority: priority, 
-                completed: false 
-            };
-            this.tasks.unshift(newTask); 
-            this.save(); 
-            input.value = ''; 
-            SoundEffects.playSystemClick(); 
-        },
-
-        completeTask(id) {
-            const taskIndex = this.tasks.findIndex(t => t.id === id); 
-            if (taskIndex === -1 || this.tasks[taskIndex].completed) return; 
-
-            const task = this.tasks[taskIndex]; 
-            task.completed = true; 
-            
-            let xpReward = task.priority === 'high' ? 100 : task.priority === 'medium' ? 50 : 20; 
-            let goldReward = task.priority === 'high' ? 30 : task.priority === 'medium' ? 15 : 5; 
-            let statName = task.stat.toUpperCase(); 
-            
+        if(window.PlayerState && PlayerState.data) {
+            PlayerState.data.authority = (PlayerState.data.authority || 0) + authorityReward;
             PlayerState.addXP(xpReward); 
             PlayerState.addGold(goldReward); 
-            PlayerState.addStat(task.stat, 1); 
+            PlayerState.addStat(task.stat || 'int', 1); 
+        }
 
-            Toast.show(`Quest Completed! Gained +${xpReward} EXP | +${goldReward} Gold | +1 ${statName}`, 'success'); 
-            SoundEffects.playSuccess(); 
-            this.save(); 
-        },
+        Toast.show(`Quest Completed! +${xpReward} EXP | +${goldReward} Gold | +${authorityReward} Authority`, 'success'); 
+        if(window.SoundEffects) SoundEffects.playSuccess(); 
+        
+        // تشغيل تأثير الاحتفال (Confetti) عند الفوز
+        if(typeof confetti === 'function') {
+            confetti({particleCount: 80, spread: 60, origin: {y: 0.7}, colors: ['#00f0ff','#9d4edd']});
+        }
 
-        deleteTask(id) {
-            this.tasks = this.tasks.filter(t => t.id !== id); 
-            SoundEffects.playSystemClick(); 
-            this.save(); 
-        },
+        this.save(); 
+        this.render();
+    },
 
-        save() {
-            localStorage.setItem('MONARCH_TASKS', JSON.stringify(this.tasks)); 
-            this.render(); 
-        },
+    // 3. ميزة حذف المهمة نهائياً من النظام
+    deleteTask(id) {
+        if(window.SoundEffects) SoundEffects.playClick();
+        this.tasks = this.tasks.filter(t => t.id !== id);
+        this.save();
+        this.render();
+        if(window.PlayerState) PlayerState.updateUI();
+        Toast.show('Quest deleted from active memory', 'error');
+    },
 
-        render() {
-            const container = document.getElementById('taskContainer'); 
-            if(!container) return; 
-            container.innerHTML = ''; 
-            let activeCount = 0; 
+    // 4. محرك العرض وتحديث المؤشرات الحية ونسبة الـ LETHALITY
+    render() {
+        const container = document.getElementById('taskContainer'); 
+        if(!container) return; 
+        container.innerHTML = ''; 
+        
+        let activeCount = 0; 
+        let completedCount = 0; 
 
-            if (this.tasks.length === 0) {
-                container.innerHTML = `<div class="text-center py-10 opacity-30 sys-font"><p>[NO ACTIVE QUESTS DETECTED]</p></div>`; 
-                if(document.getElementById('cnt-active-val')) document.getElementById('cnt-active-val').textContent = 0;
-                if(document.getElementById('cnt-all')) document.getElementById('cnt-all').textContent = 0;
-                return; 
+        if (this.tasks.length === 0) {
+            container.innerHTML = `<div class="text-center py-10 opacity-30 sys-font"><p>[NO ACTIVE QUESTS DETECTED]</p></div>`; 
+            if(document.getElementById('cnt-active-val')) document.getElementById('cnt-active-val').textContent = 0;
+            if(document.getElementById('cnt-all')) document.getElementById('cnt-all').textContent = 0;
+            if(document.getElementById('stat-percent')) document.getElementById('stat-percent').textContent = `0%`;
+            return; 
+        }
+
+        this.tasks.forEach(task => {
+            if (!task.completed) {
+                activeCount++; 
+            } else {
+                completedCount++; 
             }
 
-            this.tasks.forEach(task => {
-                if (!task.completed) activeCount++; 
+            const statColors = {
+                'int': 'text-[var(--sys-cyan)]', 
+                'str': 'text-rose-500', 
+                'vit': 'text-emerald-500', 
+                'agi': 'text-sky-400', 
+                'sen': 'text-[var(--sys-purple)]' 
+            };
 
-                const statColors = {
-                    'int': 'text-[var(--sys-cyan)]', 
-                    'str': 'text-rose-500', 
-                    'vit': 'text-emerald-500', 
-                    'agi': 'text-sky-400', 
-                    'sen': 'text-[var(--sys-purple)]' 
-                };
-
-                const div = document.createElement('div'); 
-                div.className = `task-card flex items-center justify-between p-4 bg-slate-900/80 backdrop-blur-sm border-y border-y-slate-800 transition-all ${task.completed ? 'completed opacity-50' : ''}`; 
-                
-                div.innerHTML = `
-                    <div class="flex items-center gap-4">
-                        <button onclick="QuestSystem.completeTask(${task.id})" class="w-6 h-6 rounded border-2 border-[var(--sys-cyan)] flex items-center justify-center hover:bg-[var(--sys-cyan)] hover:bg-opacity-20 transition-colors ${task.completed ? 'bg-[var(--sys-cyan)]' : ''}">
-                            ${task.completed ? '<span class="text-black text-xs font-black">✓</span>' : ''}
-                        </button>
-                        <div>
-                            <div class="font-bold text-white text-lg ${task.completed ? 'line-through text-slate-500' : ''}">${this.escape(task.text)}</div>
-                            <div class="flex gap-2 mt-1">
-                                <span class="sys-font text-[10px] px-2 py-0.5 border border-slate-700 bg-black/50 ${statColors[task.stat]} uppercase tracking-widest">
-                                    +1 ${task.stat.toUpperCase()}
-                                </span>
-                                <span class="sys-font text-[10px] px-2 py-0.5 border border-slate-700 bg-black/50 text-amber-400 uppercase tracking-widest">
-                                    RANK: ${task.priority.toUpperCase()}
-                                </span>
-                            </div>
+            const escapedText = task.text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            const div = document.createElement('div'); 
+            div.className = `task-card flex items-center justify-between p-4 bg-slate-900/80 backdrop-blur-sm border-y border-y-slate-800 transition-all ${task.completed ? 'completed opacity-50' : ''}`; 
+            
+            div.innerHTML = `
+                <div class="flex items-center gap-4">
+                    <button onclick="QuestSystem.completeTask(${task.id})" class="w-6 h-6 rounded border-2 border-[var(--sys-cyan)] flex items-center justify-center hover:bg-[var(--sys-cyan)] hover:bg-opacity-20 transition-colors ${task.completed ? 'bg-[var(--sys-cyan)]' : ''}">
+                        ${task.completed ? '<span class="text-black text-xs font-black">✓</span>' : ''}
+                    </button>
+                    <div>
+                        <div class="font-bold text-white text-lg ${task.completed ? 'line-through text-slate-500' : ''}">${escapedText}</div>
+                        <div class="flex gap-2 mt-1">
+                            <span class="sys-font text-[10px] px-2 py-0.5 border border-slate-700 bg-black/50 ${statColors[task.stat || 'int']} uppercase tracking-widest">
+                                +1 ${(task.stat || 'int').toUpperCase()}
+                            </span>
+                            <span class="sys-font text-[10px] px-2 py-0.5 border border-slate-700 bg-black/50 text-amber-400 uppercase tracking-widest">
+                                RANK: ${(task.priority || 'medium').toUpperCase()}
+                            </span>
                         </div>
                     </div>
-                    <button onclick="QuestSystem.deleteTask(${task.id})" class="text-slate-600 hover:text-rose-500 transition-colors p-2">
-                        <i class="fa-solid fa-trash"></i> 🗑️
-                    </button>
-                `; 
-                container.appendChild(div); 
-            });
+                </div>
+                <button onclick="QuestSystem.deleteTask(${task.id})" class="text-slate-600 hover:text-rose-500 transition-colors p-2">
+                    🗑️
+                </button>
+            `; 
+            container.appendChild(div); 
+        });
 
-            if(document.getElementById('cnt-active-val')) document.getElementById('cnt-active-val').textContent = activeCount; 
-            if(document.getElementById('cnt-all')) document.getElementById('cnt-all').textContent = this.tasks.length; 
-        },
-
-        escape(str) { 
-            const d = document.createElement('div'); 
-            d.textContent = str; return d.innerHTML; 
+        // حساب وحفظ نسبة معدل الفتك (LETHALITY) بشكل ديناميكي آمن
+        const lethalityRate = this.tasks.length > 0 ? Math.round((completedCount / this.tasks.length) * 100) : 0;
+        if(window.PlayerState && PlayerState.data) {
+            PlayerState.data.lethality = lethalityRate;
+            localStorage.setItem('SL_PLAYER_STATE', JSON.stringify(PlayerState.data));
         }
-    };
+        if(document.getElementById('stat-percent')) document.getElementById('stat-percent').textContent = `${lethalityRate}%`;
 
+        if(document.getElementById('cnt-active-val')) document.getElementById('cnt-active-val').textContent = activeCount; 
+        if(document.getElementById('cnt-all')) document.getElementById('cnt-all').textContent = this.tasks.length; 
+    }, // لاحظ الفاصلة هنا لربط الدوال بشكل سليم داخل الكائن
+
+    // 5. إدارة حفظ واسترجاع المهام
+    save() {
+        localStorage.setItem('SL_QUESTS', JSON.stringify(this.tasks));
+    },
+    init() {
+        const saved = localStorage.getItem('SL_QUESTS');
+        this.tasks = saved ? JSON.parse(saved) : [];
+        this.render();
+    },
+    tasks: []
+}; // هنا ينتهي كائن QuestSystem بالكامل وبشكل محكم وصحيح
     // ==========================================
     // WEATHER SYSTEM
     // ==========================================
@@ -2117,5 +2095,6 @@ penaltyRegistry: [],
 </script>
 </body>
 </html>
+
 
 
