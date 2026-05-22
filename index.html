@@ -427,7 +427,7 @@ body.light-mode .sys-table td {
                         <option value="medium" selected>A-RANK (BALANCED)</option>
                         <option value="low">C-RANK (SIMPLE)</option>
                     </select>
-                    <button onclick="Actions.addTask()" class="sl-btn px-8 py-3 font-black text-xs text-white uppercase tracking-widest">DEPLOY</button>
+                    <button onclick="QuestSystem.addTask()" class="sl-btn px-8 py-3 font-black text-xs text-white uppercase tracking-widest">DEPLOY</button>
                 </div>
                 <div class="flex gap-2 p-2 w-full lg:w-auto">
     <select id="statSelect" class="bg-[var(--sys-bg-dark)] sys-font font-bold px-3 py-2 border border-[var(--sys-purple)] border-opacity-40 outline-none text-[var(--sys-purple)] text-sm">
@@ -2008,17 +2008,18 @@ penaltyRegistry: [],
         Weather.init(); 
         PlayerState.init(); 
         QuestSystem.init(); 
+
+     
         
         const h = new Date().getHours(); 
         if(document.getElementById('greetingText')) {
             document.getElementById('greetingText').textContent = h < 12 ? 'Morning of Sovereignty, Monarch..' : 'Evening of Dominance, Monarch..'; 
         }
         
-        const taskInput = document.getElementById('taskInput');
+       const taskInput = document.getElementById('taskInput');
         if(taskInput) {
             taskInput.addEventListener('keypress', e => { if (e.key === 'Enter') QuestSystem.addTask(); }); 
         }
-        
         const navAll = document.getElementById('nav-all');
         if(navAll) navAll.classList.add('bg-[var(--sys-cyan)]', 'bg-opacity-10', 'text-[var(--sys-cyan)]', 'border-[var(--sys-cyan)]'); 
 
@@ -2088,72 +2089,33 @@ penaltyRegistry: [],
     };
 
     // Start with Login
-    window.addEventListener('DOMContentLoaded', ()=>Login.init());
-        const Actions = {
-        addTask() {
-            Audio.play('click');
-            const inp = document.getElementById('taskInput');
-            const prio = document.getElementById('prioritySelect').value;
-            const isBoss = document.getElementById('bossCheck').checked;
-            if(!inp.value.trim()) return;
-
-            const task = {
-                id: Date.now(), text: inp.value, priority: prio, completed: false,
-                boss: isBoss, bossTimer: isBoss ? 60 : null, createdAt: new Date().toISOString()
-            };
-            State.tasks.unshift(task);
-            inp.value=''; document.getElementById('bossCheck').checked=false;
-            State.save(); UI.refresh();
-            if(isBoss) Toast.show('bossTimerStarted', 'fa-skull', 'error');
-        },
-        toggleTask(id) {
-            const t = State.tasks.find(x=>x.id===id);
-            if(!t) return;
-            const oldLvl = LevelSys.getProgress().level;
-            t.completed = !t.completed;
-            if(t.completed) {
-                State.xp += State.weights[t.priority] * (t.boss?2:1);
-                Audio.play('success');
-                Toast.show('taskCompleted', 'fa-check-circle', 'success');
-                confetti({particleCount:80, spread:60, origin:{y:0.7}, colors:['#00f0ff','#9d4edd']});
-            } else {
-                State.xp = Math.max(0, State.xp - State.weights[t.priority] * (t.boss?2:1));
-                Audio.play('click');
-            }
-            State.save(); UI.refresh();
-            LevelSys.checkLevelUp(oldLvl);
-        },
-        deleteTask(id) {
-            Audio.play('click');
-            State.tasks = State.tasks.filter(t=>t.id!==id);
-            State.save(); UI.refresh();
-            Toast.show('taskDeleted', 'fa-trash');
-        },
-        enterBoss(id) {
-            const t = State.tasks.find(x=>x.id===id);
-            if(!t || t.completed) return;
-            Audio.play('boss');
-            const mins = t.bossTimer || 60;
-            Timer.default = mins*60; Timer.time = mins*60; Timer.reset(); Timer.toggle();
-            Toast.show('bossTimerStarted', 'fa-fire', 'error');
-            Router.navigate('all');
-        },
-        upgradeStat(key) {
-            if(State.statPoints<=0) { Toast.show('noPoints', 'fa-exclamation-circle', 'error'); return; }
-            State.statPoints--;
-            State.stats[key].val++;
-            const linked = State.skills.filter(s=>s.stat===key && s.level < s.max);
-            if(linked.length>0 && Math.random()>0.5) {
-                const sk = linked[Math.floor(Math.random()*linked.length)];
-                sk.level++;
-                Toast.show('statUpgraded', 'fa-arrow-up', 'success');
-            }
-            State.save(); UI.refresh(); Audio.play('success');
+// ==========================================
+    // INITIALIZATION & EVENT LISTENERS
+    // ==========================================
+    window.addEventListener('DOMContentLoaded', () => {
+        SoundEffects.init(); 
+        Pomodoro.init(); 
+        Quotes.init(); 
+        Weather.init(); 
+        PlayerState.init(); 
+        QuestSystem.init(); 
+        
+        const h = new Date().getHours(); 
+        if(document.getElementById('greetingText')) {
+            document.getElementById('greetingText').textContent = h < 12 ? 'Morning of Sovereignty, Monarch..' : 'Evening of Dominance, Monarch..'; 
         }
-    };
+        
+       const taskInput = document.getElementById('taskInput');
+        if(taskInput) {
+            taskInput.addEventListener('keypress', e => { if (e.key === 'Enter') QuestSystem.addTask(); }); 
+        }
+        const navAll = document.getElementById('nav-all');
+        if(navAll) navAll.classList.add('bg-[var(--sys-cyan)]', 'bg-opacity-10', 'text-[var(--sys-cyan)]', 'border-[var(--sys-cyan)]'); 
 
-
-
-    </script>
+        PlayerState.updateUI(); 
+    });
+</script>
 </body>
 </html>
+
+
