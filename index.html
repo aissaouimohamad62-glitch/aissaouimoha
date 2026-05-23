@@ -708,13 +708,11 @@ Watch basketball skills
 <br>
 • Monitoring developed projects / Web development (1 hour)
 <br>
-                                1.5 hours of height-increasing exercises (hanging, swimming, basketball) + oats and barley (micronutrients) + improved sleep quality (10 hours).
-<br>
-Watch cartoons or anime.
-
-<br>
 • 20:30 - 21:30: Updating the "Hard Tasks" list for the upcoming week.
 <br>
+1.5 hrs
+Intensive Height Exercises (Hanging, Swimming, Basketball) + Oats and Barley (Micronutrients) + Sleep Optimization (10 hours).
+<br>Watching cartoons or anime
                             </div>
                              <section>
                         <h3   class="text-xl font-bold text-amber-400 mb-4 flex items-center gap-2" style="color: aqua;" ><span class="text-2xl">👻</span> Sixth: Technical Directives for Peak Performance </h3>
@@ -1919,13 +1917,105 @@ const Pomodoro = {
 };
 
 const Milestone = { hide() { document.getElementById('milestoneModal').classList.add('hidden'); if(typeof SoundEffects !== 'undefined') SoundEffects.playSystemClick(); } };
-
+// --- 6.5. ENVIRONMENTAL DIAGNOSTICS (WEATHER & LOCATION) ---
 const Weather = {
-    init() { this.updateTime(); setInterval(() => this.updateTime(), 1000); },
+    init() { 
+        this.updateTime(); 
+        setInterval(() => this.updateTime(), 1000); 
+        this.syncEnvironment(); // بدء المزامنة البيئية فور تشغيل النظام
+    },
     updateTime() {
         const now = new Date(); 
         if(document.getElementById('realTime')) document.getElementById('realTime').textContent = now.toLocaleTimeString('en-US', { hour12: false }); 
         if(document.getElementById('realDate')) document.getElementById('realDate').textContent = now.toLocaleDateString('en-GB'); 
+    },
+    async syncEnvironment() {
+        try {
+            // طلب الإذن لتحديد الموقع الجغرافي
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    async (position) => {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+                        await this.fetchWeatherData(lat, lon);
+                        await this.fetchLocationName(lat, lon);
+                    },
+                    (error) => {
+                        console.warn("[SYSTEM LOG]: Location access denied. Using default coordinates (Messaad, DZ).");
+                        // إحداثيات مسعد (ولاية الجلفة) كوضع احتياطي
+                        this.fetchWeatherData(34.1536, 3.5019);
+                        this.updateLocationUI("Messaad, DZ");
+                    }
+                );
+            } else {
+                this.fetchWeatherData(34.1536, 3.5019);
+                this.updateLocationUI("Messaad, DZ");
+            }
+        } catch (err) {
+            console.error("[SYSTEM ERROR]: Environment Sync Failed", err);
+        }
+    },
+    async fetchWeatherData(lat, lon) {
+        // استخدام واجهة Open-Meteo المفتوحة لجلب الحرارة والرطوبة
+        const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m&timezone=auto`;
+        try {
+            const res = await fetch(weatherUrl);
+            const data = await res.json();
+            
+            if(data.current) {
+                const temp = Math.round(data.current.temperature_2m);
+                const hum = Math.round(data.current.relative_humidity_2m);
+
+                // حقن البيانات في الواجهة المرئية للنظام
+                const tempEl = document.getElementById('weatherTemp');
+                const humEl = document.getElementById('weatherHum');
+                
+                if(tempEl) {
+                    tempEl.textContent = `${temp}°C`;
+                    tempEl.classList.add('animate-system-pop');
+                }
+                if(humEl) {
+                    humEl.textContent = `${hum}%`;
+                    humEl.classList.add('animate-system-pop');
+                }
+            }
+        } catch (err) {
+            console.error("[SYSTEM ERROR]: Weather Fetch Error:", err);
+        }
+    },
+    async fetchLocationName(lat, lon) {
+        // استخدام واجهة Nominatim لتحويل الإحداثيات إلى اسم مدينة
+        const geoUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10&addressdetails=1`;
+        try {
+            const res = await fetch(geoUrl, {
+                headers: { 'User-Agent': 'SovereignSystem/2.5' } // تعريف وكيل لتجنب الحظر
+            });
+            const data = await res.json();
+            
+            if(data.address) {
+                // محاولة استخراج أقرب اسم للمنطقة
+                const city = data.address.city || data.address.town || data.address.village || data.address.county || "UNKNOWN SECTOR";
+                const country = data.address.country_code ? data.address.country_code.toUpperCase() : "";
+                this.updateLocationUI(`${city}, ${country}`);
+            }
+        } catch (err) {
+            console.error("[SYSTEM ERROR]: Geocoding Error:", err);
+        }
+    },
+    updateLocationUI(locationName) {
+        // تحديث قسم "CALCULATING..." ليصبح اسم القطاع الحالي
+        const seasonText = document.getElementById('seasonText');
+        const seasonIcon = document.getElementById('seasonIcon');
+        
+        if(seasonText) {
+            seasonText.textContent = locationName.toUpperCase();
+            // تغيير النص الصغير أسفلها من "Season Cycle" إلى "Current Sector" ليتناسب مع الموقع
+            if(seasonText.nextElementSibling) seasonText.nextElementSibling.textContent = "CURRENT SECTOR";
+        }
+        if(seasonIcon) {
+            seasonIcon.textContent = "📍";
+            seasonIcon.classList.add('text-[var(--sys-cyan)]', 'drop-shadow-[0_0_8px_var(--sys-cyan)]');
+        }
     }
 };
 
