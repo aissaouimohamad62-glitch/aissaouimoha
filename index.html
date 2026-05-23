@@ -1126,319 +1126,250 @@ To achieve the 5 cm mark in 6 months, focus your swimming on "in-water stretchin
     <div id="dungeonContainer" class="sl-panel p-8 w-full max-w-2xl mx-4 text-center border-2 border-transparent transition-all duration-500">
     </div>
 </div>
-
 <script>
 // ==========================================
-    // UI Helpers
-    // ==========================================
-    const UI = {
-        toggleTimerSettings() {
-            if (typeof SoundEffects !== 'undefined') SoundEffects.playSystemClick();
-            document.getElementById('timerModal').classList.toggle('hidden');
-        }
-    };
-    // ==========================================
-// SYSTEM CONTROLS (Theme Toggle)
+// THE SOVEREIGN SYSTEM ENGINE V2.5
 // ==========================================
-// ==========================================
-    // SYSTEM CONTROLS (Aura & Theme Cycler)
-    // ==========================================
-    const SystemControls = {
-        themes: ['default', 'theme-crimson', 'theme-blue-fire'],
-        currentThemeIndex: 0,
 
-        cycleTheme() {
-            const body = document.body;
-            // تنظيف الهالات السابقة
-            body.classList.remove('theme-crimson', 'theme-blue-fire', 'light-mode');
-            
-            // الانتقال للهالة التالية
-            this.currentThemeIndex = (this.currentThemeIndex + 1) % this.themes.length;
-            const newTheme = this.themes[this.currentThemeIndex];
-            
-            if (newTheme !== 'default') {
-                body.classList.add(newTheme);
-            }
+// --- 1. UTILITIES & EFFECTS ---
+const UI = {
+    toggleTimerSettings() {
+        if (typeof SoundEffects !== 'undefined') SoundEffects.playSystemClick();
+        document.getElementById('timerModal').classList.toggle('hidden');
+    }
+};
 
-            // تحديث الأيقونة لتناسب الهالة
-            const icon = document.getElementById('themeIcon');
-            if (icon) {
-                if (newTheme === 'default') icon.textContent = '🌌'; // ظلال
-                else if (newTheme === 'theme-crimson') icon.textContent = '🩸'; // دموي
-                else if (newTheme === 'theme-blue-fire') icon.textContent = '⚡'; // برق ناري
-            }
-
-            // حفظ الهالة وإطلاق تأثير الصوت
-            localStorage.setItem('MONARCH_THEME', newTheme);
-            if (typeof SoundEffects !== 'undefined') SoundEffects.playSystemClick();
-            
-            // إدارة تشغيل/إيقاف تأثير الشرارات
-            this.manageSparks(newTheme === 'theme-blue-fire');
-        },
-
-        initTheme() {
-            const savedTheme = localStorage.getItem('MONARCH_THEME') || 'default';
-            this.currentThemeIndex = this.themes.indexOf(savedTheme) !== -1 ? this.themes.indexOf(savedTheme) : 0;
-            
-            if (savedTheme !== 'default') {
-                document.body.classList.add(savedTheme);
-            }
-
-            const icon = document.getElementById('themeIcon');
-            if (icon) {
-                if(savedTheme === 'default') icon.textContent = '🌌';
-                else if(savedTheme === 'theme-crimson') icon.textContent = '🩸';
-                else if(savedTheme === 'theme-blue-fire') icon.textContent = '⚡';
-            }
-
-            this.manageSparks(savedTheme === 'theme-blue-fire');
-        },
-
-        manageSparks(isActive) {
-            let container = document.getElementById('sparks-container');
-            if (!container) {
-                container = document.createElement('div');
-                container.id = 'sparks-container';
-                document.body.appendChild(container);
-            }
-            
-            container.innerHTML = ''; // مسح الشرارات القديمة
-
-            if (isActive) {
-                // توليد 40 شرارة كهربائية نارية بأحجام وسرعات عشوائية
-                for(let i=0; i < 40; i++) {
-                    const spark = document.createElement('div');
-                    spark.className = 'lightning-spark';
-                    spark.style.left = Math.random() * 100 + 'vw';
-                    spark.style.animationDuration = (Math.random() * 2 + 0.5) + 's';
-                    spark.style.animationDelay = Math.random() * 2 + 's';
-                    container.appendChild(spark);
-                }
-            }
-        }
-    };
-// تفعيل استدعاء الـ Theme عند تحميل الصفحة
-window.addEventListener('DOMContentLoaded', () => {
-    SystemControls.initTheme();
-});
-
-    // ==========================================
-    // SOUND EFFECTS & TONE.JS INTEGRATION
-    // ==========================================
-    const SoundEffects = {
-        synth: typeof Tone !== 'undefined' ? new Tone.PolySynth(Tone.Synth).toDestination() : null,
-        epicSynth: typeof Tone !== 'undefined' ? new Tone.PolySynth(Tone.Synth).toDestination() : null,
+const SystemControls = {
+    themes: ['default', 'theme-crimson', 'theme-blue-fire'],
+    currentThemeIndex: 0,
+    cycleTheme() {
+        const body = document.body;
+        body.classList.remove('theme-crimson', 'theme-blue-fire', 'light-mode');
         
-        init() {
-            if (!this.synth) return;
-            this.synth.set({ envelope: { attack: 0.01, decay: 0.1, sustain: 0.1, release: 1 }, oscillator: { type: "square" }, volume: -8 }); 
-            this.epicSynth.set({ envelope: { attack: 0.1, decay: 0.3, sustain: 0.4, release: 3 }, oscillator: { type: "sawtooth" }, volume: -4 }); 
-        },
+        this.currentThemeIndex = (this.currentThemeIndex + 1) % this.themes.length;
+        const newTheme = this.themes[this.currentThemeIndex];
+        
+        if (newTheme !== 'default') body.classList.add(newTheme);
 
-        async playSystemClick() {
-            if (!this.synth) return;
-            if (Tone.context.state !== 'running') await Tone.start(); 
-            this.synth.triggerAttackRelease("E5", "16n", undefined, 0.3); 
-        },
-
-        async playSuccess() {
-            if (!this.synth) return;
-            if (Tone.context.state !== 'running') await Tone.start(); 
-            const now = Tone.now(); 
-            this.synth.triggerAttackRelease("A4", "16n", now, 0.4); 
-            this.synth.triggerAttackRelease("E5", "8n", now + 0.1, 0.6); 
-        },
-
-        async playLevelUp() {
-            if (!this.epicSynth) return;
-            if (Tone.context.state !== 'running') await Tone.start(); 
-            const now = Tone.now(); 
-            this.epicSynth.triggerAttackRelease(["A3", "E4", "A4"], "4n", now); 
-            this.epicSynth.triggerAttackRelease(["C4", "G4", "C5"], "4n", now + 0.3); 
-            this.epicSynth.triggerAttackRelease(["E3", "B3", "E4", "G4", "B4"], "1m", now + 0.6); 
+        const icon = document.getElementById('themeIcon');
+        if (icon) {
+            if (newTheme === 'default') icon.textContent = '🌌';
+            else if (newTheme === 'theme-crimson') icon.textContent = '🩸';
+            else if (newTheme === 'theme-blue-fire') icon.textContent = '⚡';
         }
-    };
 
-    // ==========================================
-    // SYSTEM NOTIFICATIONS (TOASTS)
-    // ==========================================
-    const Toast = {
-        container: document.getElementById('toastContainer') || (function() {
-            const div = document.createElement('div'); 
-            div.id = 'toastContainer'; 
-            div.className = 'fixed top-5 right-5 z-[10000] flex flex-col gap-3 pointer-events-none'; 
-            document.body.appendChild(div); 
-            return div; 
-        })(),
+        localStorage.setItem('MONARCH_THEME', newTheme);
+        if (typeof SoundEffects !== 'undefined') SoundEffects.playSystemClick();
+        this.manageSparks(newTheme === 'theme-blue-fire');
+    },
+    initTheme() {
+        const savedTheme = localStorage.getItem('MONARCH_THEME') || 'default';
+        this.currentThemeIndex = this.themes.indexOf(savedTheme) !== -1 ? this.themes.indexOf(savedTheme) : 0;
+        
+        if (savedTheme !== 'default') document.body.classList.add(savedTheme);
 
-        show(message, type = 'success') {
-            const toast = document.createElement('div'); 
-            toast.className = `p-4 border-r-4 ${type === 'success' ? 'bg-slate-900 border-[var(--sys-cyan)]' : 'bg-slate-900 border-rose-500'} text-white shadow-2xl flex items-center gap-3 animate-in slide-in-from-right duration-300`; 
-            toast.innerHTML = `
-                <i class="fa-solid ${type === 'success' ? 'fa-bolt text-[var(--sys-cyan)]' : 'fa-exclamation-triangle text-rose-500'} animate-pulse"></i>
-                <div class="flex flex-col">
-                    <span class="font-bold text-xs uppercase tracking-widest">${type === 'success' ? 'Monarch System' : 'Alert'}</span>
-                    <span class="text-sm font-medium">${message}</span>
-                </div>
-            `; 
-            this.container.appendChild(toast); 
-            setTimeout(() => {
-                toast.style.opacity = '0'; 
-                setTimeout(() => toast.remove(), 300); 
-            }, 4000); 
+        const icon = document.getElementById('themeIcon');
+        if (icon) {
+            if(savedTheme === 'default') icon.textContent = '🌌';
+            else if(savedTheme === 'theme-crimson') icon.textContent = '🩸';
+            else if(savedTheme === 'theme-blue-fire') icon.textContent = '⚡';
         }
-    };
-
-    // ==========================================
-    // SHADOW MONARCH SYSTEM CORE v2.5 (RPG Mechanics)
-    // ==========================================
-    const PlayerState = {
-        data: {
-            level: 1, 
-            xp: 0, 
-            gold: 0, 
-            ap: 0, 
-            stats: { str: 10, vit: 10, agi: 10, int: 10, sen: 10 }, 
-            authority: 0, 
-            lethality: 0 
-        },
-
-        init() {
-            this.load(); 
-            this.startScheduleSync(); 
-        },
-
-        load() {
-            const saved = localStorage.getItem('monarch_system_data'); 
-            if (saved) { this.data = JSON.parse(saved); } 
-            this.updateUI(); 
-        },
-
-        save() {
-            localStorage.setItem('monarch_system_data', JSON.stringify(this.data)); 
-            this.updateUI(); 
-        },
-
-   updateUI() {
-            if(document.getElementById('stat-str')) document.getElementById('stat-str').textContent = this.data.stats.str; 
-            if(document.getElementById('stat-vit')) document.getElementById('stat-vit').textContent = this.data.stats.vit; 
-            if(document.getElementById('stat-agi')) document.getElementById('stat-agi').textContent = this.data.stats.agi; 
-            if(document.getElementById('stat-int')) document.getElementById('stat-int').textContent = this.data.stats.int; 
-            if(document.getElementById('stat-sen')) document.getElementById('stat-sen').textContent = this.data.stats.sen; 
-            if(document.getElementById('playerGold')) document.getElementById('playerGold').textContent = this.data.gold; 
-            if(document.getElementById('availablePoints')) document.getElementById('availablePoints').textContent = this.data.ap; 
-            if(document.getElementById('currentLevel')) document.getElementById('currentLevel').textContent = this.data.level; 
-            if(document.getElementById('stat-xp')) document.getElementById('stat-xp').textContent = this.data.xp; 
-
-            // ===== الكود الجديد لتفعيل AUTHORITY و LETHALITY =====
-            if(document.getElementById('stat-weight')) document.getElementById('stat-weight').textContent = this.data.authority || 0;
-            if(document.getElementById('stat-percent')) document.getElementById('stat-percent').textContent = `${this.data.lethality || 0}%`;
-            // ====================================================
-
-            const nextLevelXP = this.data.level * 100; 
-            if(document.getElementById('xpText')) document.getElementById('xpText').textContent = `${this.data.xp} / ${nextLevelXP}`; 
-            const xpPercent = Math.min((this.data.xp / nextLevelXP) * 100, 100); 
-            if(document.getElementById('xpBar')) document.getElementById('xpBar').style.width = `${xpPercent}%`; 
-
-            const apButtons = document.querySelectorAll('.ap-btn'); 
-            apButtons.forEach(btn => {
-                if (this.data.ap > 0) btn.classList.remove('hidden'); 
-                else btn.classList.add('hidden'); 
-            });
-        },
-
-        spendAP(statName) {
-            if (this.data.ap > 0 && this.data.stats[statName] !== undefined) {
-                this.data.ap -= 1; 
-                this.data.stats[statName] += 1; 
-                SoundEffects.playSystemClick(); 
-                Toast.show(`Stat ${statName.toUpperCase()} structurally upgraded to +1!`, 'success'); 
-                this.save(); 
+        this.manageSparks(savedTheme === 'theme-blue-fire');
+    },
+    manageSparks(isActive) {
+        let container = document.getElementById('sparks-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'sparks-container';
+            document.body.appendChild(container);
+        }
+        container.innerHTML = ''; 
+        if (isActive) {
+            for(let i=0; i < 40; i++) {
+                const spark = document.createElement('div');
+                spark.className = 'lightning-spark';
+                spark.style.left = Math.random() * 100 + 'vw';
+                spark.style.animationDuration = (Math.random() * 2 + 0.5) + 's';
+                spark.style.animationDelay = Math.random() * 2 + 's';
+                container.appendChild(spark);
             }
-        },
+        }
+    }
+};
 
-        addXP(amount) {
-            this.data.xp += amount; 
-            const xpNeeded = this.data.level * 100; 
-            if (this.data.xp >= xpNeeded) {
-                this.data.xp -= xpNeeded; 
-                this.levelUp(); 
+const SoundEffects = {
+    synth: typeof Tone !== 'undefined' ? new Tone.PolySynth(Tone.Synth).toDestination() : null,
+    epicSynth: typeof Tone !== 'undefined' ? new Tone.PolySynth(Tone.Synth).toDestination() : null,
+    init() {
+        if (!this.synth) return;
+        this.synth.set({ envelope: { attack: 0.01, decay: 0.1, sustain: 0.1, release: 1 }, oscillator: { type: "square" }, volume: -8 }); 
+        this.epicSynth.set({ envelope: { attack: 0.1, decay: 0.3, sustain: 0.4, release: 3 }, oscillator: { type: "sawtooth" }, volume: -4 }); 
+    },
+    async playSystemClick() {
+        if (!this.synth) return;
+        if (Tone.context.state !== 'running') await Tone.start(); 
+        this.synth.triggerAttackRelease("E5", "16n", undefined, 0.3); 
+    },
+    async playSuccess() {
+        if (!this.synth) return;
+        if (Tone.context.state !== 'running') await Tone.start(); 
+        const now = Tone.now(); 
+        this.synth.triggerAttackRelease("A4", "16n", now, 0.4); 
+        this.synth.triggerAttackRelease("E5", "8n", now + 0.1, 0.6); 
+    },
+    async playLevelUp() {
+        if (!this.epicSynth) return;
+        if (Tone.context.state !== 'running') await Tone.start(); 
+        const now = Tone.now(); 
+        this.epicSynth.triggerAttackRelease(["A3", "E4", "A4"], "4n", now); 
+        this.epicSynth.triggerAttackRelease(["C4", "G4", "C5"], "4n", now + 0.3); 
+        this.epicSynth.triggerAttackRelease(["E3", "B3", "E4", "G4", "B4"], "1m", now + 0.6); 
+    }
+};
+
+const Toast = {
+    container: document.getElementById('toastContainer') || (function() {
+        const div = document.createElement('div'); 
+        div.id = 'toastContainer'; 
+        div.className = 'fixed top-5 right-5 z-[10000] flex flex-col gap-3 pointer-events-none'; 
+        document.body.appendChild(div); 
+        return div; 
+    })(),
+    show(message, type = 'success') {
+        const toast = document.createElement('div'); 
+        toast.className = `p-4 border-r-4 ${type === 'success' ? 'bg-slate-900 border-[var(--sys-cyan)]' : 'bg-slate-900 border-rose-500'} text-white shadow-2xl flex items-center gap-3 transition-all duration-300`; 
+        toast.innerHTML = `
+            <div class="flex flex-col">
+                <span class="font-bold text-xs uppercase tracking-widest text-[var(--sys-cyan)]">${type === 'success' ? 'System Message' : 'Alert'}</span>
+                <span class="text-sm font-medium text-slate-200">${message}</span>
+            </div>
+        `; 
+        this.container.appendChild(toast); 
+        setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 4000); 
+    }
+};
+
+// --- 2. PLAYER STATE (RPG MECHANICS) ---
+const PlayerState = {
+    data: { level: 1, xp: 0, gold: 0, ap: 0, stats: { str: 10, vit: 10, agi: 10, int: 10, sen: 10 }, authority: 0, lethality: 0 },
+    init() {
+        this.load(); 
+        this.startScheduleSync(); 
+    },
+    load() {
+        const saved = localStorage.getItem('monarch_system_data'); 
+        if (saved) { this.data = JSON.parse(saved); } 
+        this.updateUI(); 
+    },
+    save() {
+        localStorage.setItem('monarch_system_data', JSON.stringify(this.data)); 
+        this.updateUI(); 
+    },
+    updateUI() {
+        ['str', 'vit', 'agi', 'int', 'sen'].forEach(stat => {
+            if(document.getElementById(`stat-${stat}`)) document.getElementById(`stat-${stat}`).textContent = this.data.stats[stat]; 
+        });
+        if(document.getElementById('playerGold')) document.getElementById('playerGold').textContent = this.data.gold; 
+        if(document.getElementById('availablePoints')) document.getElementById('availablePoints').textContent = this.data.ap; 
+        if(document.getElementById('currentLevel')) document.getElementById('currentLevel').textContent = this.data.level; 
+        if(document.getElementById('stat-xp')) document.getElementById('stat-xp').textContent = this.data.xp; 
+        if(document.getElementById('stat-weight')) document.getElementById('stat-weight').textContent = this.data.authority || 0;
+        if(document.getElementById('stat-percent')) document.getElementById('stat-percent').textContent = `${this.data.lethality || 0}%`;
+
+        const nextLevelXP = this.data.level * 100; 
+        if(document.getElementById('xpText')) document.getElementById('xpText').textContent = `${this.data.xp} / ${nextLevelXP}`; 
+        const xpPercent = Math.min((this.data.xp / nextLevelXP) * 100, 100); 
+        if(document.getElementById('xpBar')) document.getElementById('xpBar').style.width = `${xpPercent}%`; 
+
+        document.querySelectorAll('.ap-btn').forEach(btn => {
+            if (this.data.ap > 0) btn.classList.remove('hidden'); 
+            else btn.classList.add('hidden'); 
+        });
+    },
+    spendAP(statName) {
+        if (this.data.ap > 0 && this.data.stats[statName] !== undefined) {
+            this.data.ap -= 1; 
+            this.data.stats[statName] += 1; 
+            SoundEffects.playSystemClick(); 
+            Toast.show(`Stat ${statName.toUpperCase()} structurally upgraded!`, 'success'); 
+            this.save(); 
+        }
+    },
+addXP(amount) {
+        this.data.xp += amount; 
+        
+        // معالجة التراجع وخصم الخبرة بأمان
+        if (this.data.xp < 0) {
+            if (this.data.level > 1) {
+                this.data.level -= 1;
+                this.data.xp += (this.data.level * 100);
+            } else {
+                this.data.xp = 0; // منع النزول تحت الصفر في المستوى الأول
             }
-            this.save(); 
-        },
+        }
 
-        addGold(amount) {
-            this.data.gold += amount; 
-            this.save(); 
-        },
-
-        addStat(statName, amount) {
-            if (this.data.stats[statName] !== undefined) {
-                this.data.stats[statName] += amount; 
-                this.save(); 
-            }
-        },
-
-        levelUp() {
-            this.data.level += 1; 
-            this.data.ap += 3; 
-            this.data.stats.str += 1; 
-            this.data.stats.vit += 1; 
-            this.data.stats.agi += 1; 
-            this.data.stats.int += 1; 
-            this.data.stats.sen += 1; 
-            this.save(); 
+        // معالجة الارتقاء (Level Up)
+        const xpNeeded = this.data.level * 100; 
+        if (this.data.xp >= xpNeeded) {
+            this.data.xp -= xpNeeded; 
+            this.levelUp(); 
+        }
+        this.save(); 
+    },
+    addGold(amount) { this.data.gold += amount; this.save(); },
+    addStat(statName, amount) {
+        if (this.data.stats[statName] !== undefined) { this.data.stats[statName] += amount; this.save(); }
+    },
+    levelUp() {
+        this.data.level += 1; 
+        this.data.ap += 3; 
+        Object.keys(this.data.stats).forEach(k => this.data.stats[k] += 1);
+        this.save(); 
+        
+        SoundEffects.playLevelUp(); 
+        if (typeof confetti !== 'undefined') confetti({ particleCount: 300, spread: 120, origin: { y: 0.6 }, colors: ['#00f0ff', '#9d4edd', '#ffffff'] }); 
+        
+        const modal = document.getElementById('milestoneModal'); 
+        if(modal) {
+            document.getElementById('milestoneOldLevel').textContent = this.data.level - 1; 
+            document.getElementById('milestoneLevelText').textContent = this.data.level; 
+            document.getElementById('milestoneMessage').innerHTML = `State recovered.<br>All stats increased by +1<br>Acquired 3 Free AP.`; 
+            modal.classList.remove('hidden'); 
+        }
+    },
+    startScheduleSync() {
+        const updateSystemBroadcast = () => {
+            const now = new Date(); 
+            const currentTimeDec = now.getHours() + now.getMinutes() / 60; 
+            let msg = "[SYSTEM STATUS]: Searching current operational sector..."; 
             
-            SoundEffects.playLevelUp(); 
-            if (typeof confetti !== 'undefined') {
-                confetti({ particleCount: 300, spread: 120, origin: { y: 0.6 }, colors: ['#00f0ff', '#9d4edd', '#ffffff'] }); 
-            }
-            
-            const modal = document.getElementById('milestoneModal'); 
-            if(modal) {
-                document.getElementById('milestoneOldLevel').textContent = this.data.level - 1; 
-                document.getElementById('milestoneLevelText').textContent = this.data.level; 
-                document.getElementById('milestoneMessage').innerHTML = `State recovered.<br>All stats increased by +1<br>Acquired 3 Free AP.`; 
-                modal.classList.remove('hidden'); 
-            }
-        },
+            // System mapping based on Charter
+            if (currentTimeDec >= 5 && currentTimeDec < 6) msg = "⚡ ACTIVE BLOCK: [SPIRITUAL CORE] -> Quran recitation & Fajr Adhkar."; 
+            else if (currentTimeDec >= 6 && currentTimeDec < 8.5) msg = "💻 ACTIVE BLOCK: [DEEP ARCHITECTURE DEV] -> Programming AiMoha Project."; 
+            else if (currentTimeDec >= 8.5 && currentTimeDec < 10.5) msg = "🤖 ACTIVE BLOCK: [AI ACADEMY] -> Machine Learning training."; 
+            else if (currentTimeDec >= 15 && currentTimeDec < 16.5) msg = "🏋️ ACTIVE BLOCK: [EVOLUTIONARY PPL ENGINE] -> Physical conditioning."; 
+            else if (currentTimeDec >= 20.5 && currentTimeDec < 21.5) msg = "🧠 ACTIVE BLOCK: [COGNITIVE DOMINATION] -> Brain Dungeons active."; 
+            else msg = "⚔️ ACTIVE BLOCK: [FLEXIBLE ENGAGEMENT] -> Check operational charter."; 
 
-        startScheduleSync() {
-            const updateSystemBroadcast = () => {
-                const now = new Date(); 
-                const hours = now.getHours(); 
-                const minutes = now.getMinutes(); 
-                const currentTimeDec = hours + minutes / 60; 
-                let currentBlockMessage = "[SYSTEM STATUS]: Searching current operational sector..."; 
+            if(document.getElementById('motivationalQuote')) document.getElementById('motivationalQuote').textContent = msg; 
+        };
+        updateSystemBroadcast(); 
+        setInterval(updateSystemBroadcast, 60000); 
+    }
+};
 
-                if (currentTimeDec >= 5 && currentTimeDec < 6) currentBlockMessage = "⚡ ACTIVE BLOCK: [SPIRITUAL CORE] -> Quran recitation, Fajr Adhkar and stretching. Focus intensity: High."; 
-                else if (currentTimeDec >= 6 && currentTimeDec < 8.5) currentBlockMessage = "💻 ACTIVE BLOCK: [DEEP ARCHITECTURE DEV] -> Programming AiMoha via React.js/Python. +INT Multiplier active."; 
-                else if (currentTimeDec >= 8.5 && currentTimeDec < 10.5) currentBlockMessage = "🤖 ACTIVE BLOCK: [AI SOVEREIGN ACADEMY] -> Machine Learning training & Algorithm Engineering."; 
-                else if (currentTimeDec >= 10.5 && currentTimeDec < 12) currentBlockMessage = "🗣️ ACTIVE BLOCK: [POLYGLOT ACQUISITION] -> Technical English immersion & Speech Shadowing protocols."; 
-                else if (currentTimeDec >= 12 && currentTimeDec < 13) currentBlockMessage = "☕ ACTIVE BLOCK: [SYSTEM INTERMISSION] -> Dhuhr prayers & High Protein nutritional absorption."; 
-                else if (currentTimeDec >= 13 && currentTimeDec < 15) currentBlockMessage = "🔬 ACTIVE BLOCK: [APPLIED INTELLIGENCE LAB] -> Building real-world AI software systems."; 
-                else if (currentTimeDec >= 15 && currentTimeDec < 16.5) currentBlockMessage = "🏋️ ACTIVE BLOCK: [EVOLUTIONARY PPL ENGINE] -> Physical conditioning: Push/Pull/Legs training split."; 
-                else if (currentTimeDec >= 16.5 && currentTimeDec < 17.5) currentBlockMessage = "🧪 ACTIVE BLOCK: [EXPERIMENTAL SCIENCES] -> Academic mastery execution (Math/Physics/Natural Science)."; 
-                else if (currentTimeDec >= 17.5 && currentTimeDec < 19.5) currentBlockMessage = "🍉 ACTIVE BLOCK: [DYNAMIC TASK & REFUEL] -> Conditioning, evening lecture listening, and lighter dinner."; 
-                else if (currentTimeDec >= 20.5 && currentTimeDec < 21.5) currentBlockMessage = "🧠 ACTIVE BLOCK: [COGNITIVE DOMINATION] -> Brain Dungeons active: Strategic Chess, Sudoku or Dual N-Back."; 
-                else currentBlockMessage = "💤 ACTIVE BLOCK: [SYSTEM SLEEP CRYPT] -> Full cognitive and cellular shutdown for recovery protocols."; 
-
-                if(document.getElementById('motivationalQuote')) {
-                    document.getElementById('motivationalQuote').textContent = currentBlockMessage; 
-                }
-            };
-            updateSystemBroadcast(); 
-            setInterval(updateSystemBroadcast, 60000); 
-        }
-    };
-
-    // ==========================================
-    // QUEST SYSTEM
-    // ==========================================
+// --- 3. QUEST SYSTEM ---
 const QuestSystem = {
-    // 1. ميزة إضافة مهمة جديدة وتصنيفها
+    tasks: [],
+    init() {
+        // تم إصلاح مشكلة قراءة البيانات من مساحة التخزين المحلية
+        const saved = localStorage.getItem('SL_QUESTS');
+        this.tasks = saved ? JSON.parse(saved) : [];
+        this.render();
+        
+    },
     addTask() {
-        if(window.SoundEffects) SoundEffects.playClick();
+        if(window.SoundEffects) SoundEffects.playSystemClick();
         const inp = document.getElementById('taskInput');
         const prio = document.getElementById('prioritySelect').value;
         const statSelect = document.getElementById('statSelect') ? document.getElementById('statSelect').value : 'int';
@@ -1458,52 +1389,57 @@ const QuestSystem = {
         inp.value = ''; 
         this.save(); 
         this.render();
-        if(window.PlayerState) PlayerState.updateUI();
         Toast.show('Quest deployed to system window', 'success');
     },
-
-    // 2. ميزة إنهاء المهمة وحساب الـ AUTHORITY والـ XP والذهب والخصائص
-    completeTask(id) {
+toggleTask(id) {
         const taskIndex = this.tasks.findIndex(t => t.id === id); 
-        if (taskIndex === -1 || this.tasks[taskIndex].completed) return; 
+        if (taskIndex === -1) return; 
 
         const task = this.tasks[taskIndex]; 
-        task.completed = true; 
         
+        // حساب المكافآت بناءً على الرتبة
         let xpReward = task.priority === 'high' ? 100 : task.priority === 'medium' ? 50 : 20; 
         let goldReward = task.priority === 'high' ? 30 : task.priority === 'medium' ? 15 : 5; 
         let authorityReward = task.priority === 'high' ? 10 : task.priority === 'medium' ? 5 : 2;
 
-        if(window.PlayerState && PlayerState.data) {
-            PlayerState.data.authority = (PlayerState.data.authority || 0) + authorityReward;
-            PlayerState.addXP(xpReward); 
-            PlayerState.addGold(goldReward); 
-            PlayerState.addStat(task.stat || 'int', 1); 
-        }
-
-        Toast.show(`Quest Completed! +${xpReward} EXP | +${goldReward} Gold | +${authorityReward} Authority`, 'success'); 
-        if(window.SoundEffects) SoundEffects.playSuccess(); 
-        
-        // تشغيل تأثير الاحتفال (Confetti) عند الفوز
-        if(typeof confetti === 'function') {
-            confetti({particleCount: 80, spread: 60, origin: {y: 0.7}, colors: ['#00f0ff','#9d4edd']});
+        if (!task.completed) {
+            // حالة: إتمام المهمة (إضافة المكافآت)
+            task.completed = true; 
+            if(window.PlayerState) {
+                PlayerState.data.authority = (PlayerState.data.authority || 0) + authorityReward;
+                PlayerState.addXP(xpReward); 
+                PlayerState.addGold(goldReward); 
+                PlayerState.addStat(task.stat || 'int', 1); 
+                PlayerState.save();
+            }
+            Toast.show(`Quest Cleared! +${xpReward} EXP`, 'success'); 
+            if(window.SoundEffects) SoundEffects.playSuccess(); 
+            if(typeof confetti === 'function') confetti({particleCount: 80, spread: 60, origin: {y: 0.7}, colors: ['#00f0ff','#9d4edd']});
+        } else {
+            // حالة: التراجع عن إتمام المهمة (خصم المكافآت)
+            task.completed = false;
+            if(window.PlayerState) {
+                // استخدام Math.max لضمان عدم نزول السلطة أو الذهب تحت الصفر
+                PlayerState.data.authority = Math.max(0, (PlayerState.data.authority || 0) - authorityReward);
+                PlayerState.addXP(-xpReward); // إرسال قيمة سالبة لخصم الخبرة
+                PlayerState.addGold(-goldReward); 
+                if (PlayerState.data.gold < 0) PlayerState.data.gold = 0; // حماية للذهب
+                PlayerState.addStat(task.stat || 'int', -1); 
+                PlayerState.save();
+            }
+            Toast.show(`Quest Reversed! Rewards Deducted.`, 'error'); // إشعار تحذيري
+            if(window.SoundEffects) SoundEffects.playSystemClick();
         }
 
         this.save(); 
         this.render();
     },
-
-    // 3. ميزة حذف المهمة نهائياً من النظام
     deleteTask(id) {
-        if(window.SoundEffects) SoundEffects.playClick();
+        if(window.SoundEffects) SoundEffects.playSystemClick();
         this.tasks = this.tasks.filter(t => t.id !== id);
         this.save();
         this.render();
-        if(window.PlayerState) PlayerState.updateUI();
-        Toast.show('Quest deleted from active memory', 'error');
     },
-
-    // 4. محرك العرض وتحديث المؤشرات الحية ونسبة الـ LETHALITY
     render() {
         const container = document.getElementById('taskContainer'); 
         if(!container) return; 
@@ -1514,639 +1450,529 @@ const QuestSystem = {
 
         if (this.tasks.length === 0) {
             container.innerHTML = `<div class="text-center py-10 opacity-30 sys-font"><p>[NO ACTIVE QUESTS DETECTED]</p></div>`; 
-            if(document.getElementById('cnt-active-val')) document.getElementById('cnt-active-val').textContent = 0;
-            if(document.getElementById('cnt-all')) document.getElementById('cnt-all').textContent = 0;
-            if(document.getElementById('stat-percent')) document.getElementById('stat-percent').textContent = `0%`;
+            this.updateStatsUI(0, 0, 0);
             return; 
         }
 
+        const statColors = { 'int': 'text-[var(--sys-cyan)]', 'str': 'text-rose-500', 'vit': 'text-emerald-500', 'agi': 'text-sky-400', 'sen': 'text-[var(--sys-purple)]' };
+
         this.tasks.forEach(task => {
-            if (!task.completed) {
-                activeCount++; 
-            } else {
-                completedCount++; 
-            }
-
-            const statColors = {
-                'int': 'text-[var(--sys-cyan)]', 
-                'str': 'text-rose-500', 
-                'vit': 'text-emerald-500', 
-                'agi': 'text-sky-400', 
-                'sen': 'text-[var(--sys-purple)]' 
-            };
-
+            task.completed ? completedCount++ : activeCount++;
             const escapedText = task.text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
             const div = document.createElement('div'); 
             div.className = `task-card flex items-center justify-between p-4 bg-slate-900/80 backdrop-blur-sm border-y border-y-slate-800 transition-all ${task.completed ? 'completed opacity-50' : ''}`; 
             
             div.innerHTML = `
                 <div class="flex items-center gap-4">
-                    <button onclick="QuestSystem.completeTask(${task.id})" class="w-6 h-6 rounded border-2 border-[var(--sys-cyan)] flex items-center justify-center hover:bg-[var(--sys-cyan)] hover:bg-opacity-20 transition-colors ${task.completed ? 'bg-[var(--sys-cyan)]' : ''}">
+                    <button onclick="QuestSystem.toggleTask(${task.id})" class="w-6 h-6 rounded border-2 border-[var(--sys-cyan)] flex items-center justify-center hover:bg-[var(--sys-cyan)] hover:bg-opacity-20 transition-colors ${task.completed ? 'bg-[var(--sys-cyan)]' : ''}">
                         ${task.completed ? '<span class="text-black text-xs font-black">✓</span>' : ''}
                     </button>
                     <div>
                         <div class="font-bold text-white text-lg ${task.completed ? 'line-through text-slate-500' : ''}">${escapedText}</div>
                         <div class="flex gap-2 mt-1">
-                            <span class="sys-font text-[10px] px-2 py-0.5 border border-slate-700 bg-black/50 ${statColors[task.stat || 'int']} uppercase tracking-widest">
-                                +1 ${(task.stat || 'int').toUpperCase()}
-                            </span>
-                            <span class="sys-font text-[10px] px-2 py-0.5 border border-slate-700 bg-black/50 text-amber-400 uppercase tracking-widest">
-                                RANK: ${(task.priority || 'medium').toUpperCase()}
-                            </span>
+                            <span class="sys-font text-[10px] px-2 py-0.5 border border-slate-700 bg-black/50 ${statColors[task.stat || 'int']} uppercase tracking-widest">+1 ${(task.stat || 'int').toUpperCase()}</span>
+                            <span class="sys-font text-[10px] px-2 py-0.5 border border-slate-700 bg-black/50 text-amber-400 uppercase tracking-widest">RANK: ${(task.priority || 'medium').toUpperCase()}</span>
                         </div>
                     </div>
                 </div>
-                <button onclick="QuestSystem.deleteTask(${task.id})" class="text-slate-600 hover:text-rose-500 transition-colors p-2">
-                    🗑️
-                </button>
+                <button onclick="QuestSystem.deleteTask(${task.id})" class="text-slate-600 hover:text-rose-500 transition-colors p-2">🗑️</button>
             `; 
             container.appendChild(div); 
         });
 
-        // حساب وحفظ نسبة معدل الفتك (LETHALITY) بشكل ديناميكي آمن
-        const lethalityRate = this.tasks.length > 0 ? Math.round((completedCount / this.tasks.length) * 100) : 0;
-        if(window.PlayerState && PlayerState.data) {
+        const lethalityRate = Math.round((completedCount / this.tasks.length) * 100);
+        if(window.PlayerState) {
             PlayerState.data.lethality = lethalityRate;
-            localStorage.setItem('SL_PLAYER_STATE', JSON.stringify(PlayerState.data));
+            PlayerState.save();
         }
-        if(document.getElementById('stat-percent')) document.getElementById('stat-percent').textContent = `${lethalityRate}%`;
-
-        if(document.getElementById('cnt-active-val')) document.getElementById('cnt-active-val').textContent = activeCount; 
-        if(document.getElementById('cnt-all')) document.getElementById('cnt-all').textContent = this.tasks.length; 
-    }, // لاحظ الفاصلة هنا لربط الدوال بشكل سليم داخل الكائن
-
-    // 5. إدارة حفظ واسترجاع المهام
-    save() {
-        localStorage.setItem('SL_QUESTS', JSON.stringify(this.tasks));
+        this.updateStatsUI(activeCount, this.tasks.length, lethalityRate);
     },
-    init() {
-        const saved = localStorage.setItem('monarch_system_data', JSON.stringify(PlayerState.data));
-        this.tasks = saved ? JSON.parse(saved) : [];
-        this.render();
+    updateStatsUI(active, all, lethality) {
+        if(document.getElementById('cnt-active-val')) document.getElementById('cnt-active-val').textContent = active; 
+        if(document.getElementById('cnt-all')) document.getElementById('cnt-all').textContent = all; 
+        if(document.getElementById('stat-percent')) document.getElementById('stat-percent').textContent = `${lethality}%`;
     },
-    tasks: []
-}; // هنا ينتهي كائن QuestSystem بالكامل وبشكل محكم وصحيح
-    // ==========================================
-    // WEATHER SYSTEM
-    // ==========================================
-    const Weather = {
+    save() { localStorage.setItem('SL_QUESTS', JSON.stringify(this.tasks)); }
+};
+
+// --- 4. BRAIN GAMES (MENTAL DUNGEONS) ---
+const BrainGames = {
+    state: { gameData: null, isPlaying: false, score: 0, moves: 0 }, 
+    open(gameType) {
+        SoundEffects.playSystemClick(); 
+        const container = document.getElementById('dungeonContainer'); 
+        if(!container) return;
+        document.getElementById('dungeonModal').classList.remove('hidden'); 
+        document.getElementById('dungeonModal').classList.add('flex');
+        
+        let html = ''; 
+        if (gameType === 'sudoku') {
+            html = `
+                <div class="sys-font text-[var(--sys-purple)] tracking-[0.3em] text-xs mb-2">LOGIC TRIAL</div>
+                <h2 class="text-2xl font-black text-white mb-6">Tactical Sudoku (4x4)</h2>
+                <div id="sudokuGrid" class="grid grid-cols-4 gap-1 max-w-[200px] mx-auto mb-6"></div>
+                <div id="gameMsg" class="h-6 text-sm font-bold text-rose-500 mb-4"></div>
+                <div class="flex gap-3">
+                    <button onclick="BrainGames.sudoku.check()" class="flex-1 sl-btn py-3 font-bold text-white uppercase tracking-widest text-xs">Check Matrix</button>
+                    <button onclick="BrainGames.close()" class="px-6 bg-slate-800 hover:bg-rose-900 border border-slate-600 text-white font-bold uppercase tracking-widest text-xs">Escape</button>
+                </div>
+            `; 
+        } else if (gameType === 'nback') {
+            html = `
+                <div class="sys-font text-[var(--sys-cyan)] tracking-[0.3em] text-xs mb-2">MEMORY TRIAL</div>
+                <h2 class="text-2xl font-black text-white mb-2">Dual N-Back (1-Back)</h2>
+                <p class="text-xs text-slate-400 mb-6">Does the current square match the previous one exactly?</p>
+                <div id="nbackGrid" class="grid grid-cols-3 gap-2 w-48 h-48 mx-auto mb-6"></div>
+                <div id="gameMsg" class="h-6 text-sm font-bold text-[var(--sys-cyan)] mb-4">Score: 0 / 3</div>
+                <div class="flex gap-3">
+                    <button id="nbackMatchBtn" onclick="BrainGames.nback.match()" class="flex-1 sl-btn py-3 font-bold text-white uppercase tracking-widest text-xs opacity-50 pointer-events-none">Match</button>
+                    <button id="nbackStartBtn" onclick="BrainGames.nback.start()" class="flex-1 bg-[var(--sys-cyan)] bg-opacity-20 border border-[var(--sys-cyan)] hover:bg-[var(--sys-cyan)] hover:text-black text-white font-bold py-3 transition-all uppercase text-xs">Start Trial</button>
+                    <button onclick="BrainGames.close()" class="px-4 bg-slate-800 border border-slate-600 text-white font-bold uppercase tracking-widest text-xs">Escape</button>
+                </div>
+            `; 
+        } else if (gameType === 'memory') {
+            html = `
+                <div class="sys-font text-amber-500 tracking-[0.3em] text-xs mb-2">SPATIAL TRIAL</div>
+                <h2 class="text-2xl font-black text-white mb-6">Matrix Match (Memory)</h2>
+                <div id="memoryGrid" class="grid grid-cols-4 gap-2 mb-6"></div>
+                <div id="gameMsg" class="h-6 text-sm font-bold text-amber-500 mb-4">Moves: 0</div>
+                <button onclick="BrainGames.close()" class="w-full py-3 bg-slate-800 hover:bg-rose-900 border border-slate-600 text-white font-bold uppercase tracking-widest text-xs">Escape Dungeon</button>
+            `; 
+        }
+
+        container.innerHTML = html; 
+        if (gameType === 'sudoku') this.sudoku.init(); 
+        if (gameType === 'nback') this.nback.init(); 
+        if (gameType === 'memory') this.memory.init(); 
+    },
+    close() {
+        SoundEffects.playSystemClick(); 
+        const modal = document.getElementById('dungeonModal');
+        if(modal) {
+            modal.classList.add('hidden'); 
+            modal.classList.remove('flex');
+        }
+        if(this.nback.isPlaying) this.nback.stop(); 
+    },
+    reward(gameName, xpGain) {
+        SoundEffects.playSuccess(); 
+        if (typeof confetti !== 'undefined') confetti({ particleCount: 100, spread: 70, colors: ['#00f0ff', '#9d4edd'] }); 
+        PlayerState.addXP(xpGain); 
+        
+        const container = document.getElementById('dungeonContainer');
+        container.innerHTML = `
+            <div class="py-10">
+                <div class="text-5xl mb-4">👑</div>
+                <h2 class="text-3xl font-black text-white mb-2 drop-shadow-[0_0_10px_var(--sys-cyan)]">DUNGEON CLEARED</h2>
+                <p class="text-slate-300 mb-6">Successfully cleared the ${gameName} dungeon.</p>
+                <div class="text-2xl font-bold text-[var(--sys-cyan)] sl-glow-text mb-8">+${xpGain} EXP</div>
+                <button onclick="BrainGames.close()" class="sl-btn px-8 py-3 font-bold text-white uppercase tracking-widest text-sm">Return to Dashboard</button>
+            </div>
+        `; 
+    },
+    sudoku: {
+        solution: [1,2,3,4, 3,4,1,2, 2,1,4,3, 4,3,2,1], 
         init() {
-            this.updateTime(); 
-            setInterval(() => this.updateTime(), 1000); 
-            this.fetchWeather(); 
-            setInterval(() => this.fetchWeather(), 30 * 60 * 1000); 
+            const grid = document.getElementById('sudokuGrid'); 
+            grid.innerHTML = ''; 
+            const puzzle = this.solution.map(n => Math.random() > 0.4 ? n : 0); 
+            BrainGames.state.gameData = [...puzzle]; 
+
+            puzzle.forEach((num, i) => {
+                const cell = document.createElement('div'); 
+                cell.className = `w-10 h-10 flex items-center justify-center font-bold text-lg bg-slate-900 border border-slate-700 cursor-pointer ${num !== 0 ? 'text-[var(--sys-cyan)]' : 'text-white'}`; 
+                cell.textContent = num !== 0 ? num : ''; 
+                if (num === 0) cell.onclick = () => this.inputNumber(cell, i); 
+                grid.appendChild(cell); 
+            });
         },
-        updateTime() {
-            const now = new Date(); 
-            if(document.getElementById('realTime')) document.getElementById('realTime').textContent = now.toLocaleTimeString('en-US', { hour12: false }); 
-            if(document.getElementById('realDate')) document.getElementById('realDate').textContent = now.toLocaleDateString('en-GB'); 
-            
-            const m = now.getMonth() + 1; 
-            let s = "", i = ""; 
-            if (m>=3 && m<=5) { s = "Spring"; i = "🌸"; } 
-            else if (m>=6 && m<=8) { s = "Summer"; i = "☀️"; } 
-            else if (m>=9 && m<=11) { s = "Autumn"; i = "🍂"; } 
-            else { s = "Winter"; i = "❄️"; } 
-            
-            if(document.getElementById('seasonText')) document.getElementById('seasonText').textContent = s; 
-            if(document.getElementById('seasonIcon')) document.getElementById('seasonIcon').textContent = i; 
+        inputNumber(cell, index) {
+            SoundEffects.playSystemClick(); 
+            let val = parseInt(cell.textContent) || 0; 
+            val = val >= 4 ? 1 : val + 1; 
+            cell.textContent = val; 
+            cell.style.color = '#fff';
+            BrainGames.state.gameData[index] = val; 
         },
-        async fetchWeather() {
-            try {
-                const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=34.6667&longitude=3.2500&current=temperature_2m,relative_humidity_2m`); 
-                const d = await res.json(); 
-                if (d.current) {
-                    if(document.getElementById('weatherTemp')) document.getElementById('weatherTemp').textContent = `${Math.round(d.current.temperature_2m)}°C`; 
-                    if(document.getElementById('weatherHum')) document.getElementById('weatherHum').textContent = `${Math.round(d.current.relative_humidity_2m)}%`; 
+        check() {
+            const cells = document.getElementById('sudokuGrid').children; 
+            let isCorrect = true; 
+            let isFilled = true; 
+
+            BrainGames.state.gameData.forEach((num, i) => {
+                if (num === 0) isFilled = false; 
+                if (num !== 0 && num !== this.solution[i]) {
+                    isCorrect = false; 
+                    cells[i].style.backgroundColor = '#4c0519'; // rose-900
+                } else {
+                    cells[i].style.backgroundColor = '';
                 }
-            } catch (e) { console.error(e); } 
+            });
+            const msg = document.getElementById('gameMsg'); 
+            if (!isFilled) msg.textContent = "Must fill all cells first!"; 
+            else if (!isCorrect) msg.textContent = "Errors in matrix, check again!"; 
+            else BrainGames.reward('Tactical Sudoku', 80); 
         }
-    };
-
-    // ==========================================
-    // SOVEREIGN AI ENGINE
-    // ==========================================
-    const SovereignAI = {
-        knowledgeBase: {
-            programming: `⚡ [SYSTEM COMMAND: Continuous Programming Ascension]\nMonarch, your architecture for (The Sovereign System) relies on robust Single Page Application (SPA) logic and localStorage integration.\n- Continue cleaning JavaScript code and syncing counters.\n- Your control over the UI is your first step towards digital dominance and your independent freelance projects.`, 
-            fitness: `🥊 [COMBAT AND PHYSICAL TOUGHNESS DIRECTIVE]\nCombat and fitness sessions are non-negotiable:\n- Muay Thai and BJJ: Control and explosive power in strikes require ironclad commitment inside the gym and the field.\n- Calisthenics: Breaking Pull-up records and maintaining the daily routine builds the ultimate Monarch's physique.`, 
-            content: `🎬 [PRODUCTION BLUEPRINT: Faceless Content]\nYour channels for content creation, self-development, and gaming (Onyx Apex, REN Gaming, AISSAOUI):\n- Require strict cinematic work on DaVinci Resolve to dial in the editing.\n- Utilize integrated sound engineering via FL Studio to give clips an aura of majesty and absolute control.`, 
-            unified_block: `📅 [UNIFIED BLOCK: Sunday to Wednesday]\nMonarch, you are currently inside the strict unified block for the operational week:\n• Wake up: 05:00 AM (Except Monday at 02:45 AM for night prayer, Suhoor, and fasting).\n• Morning Focus Block (06:00 - 08:30): Absolute dedication to code development and app building with all distractions blocked.\n• Rest of the day: Evenly distributed between academic pursuit, sports, and programming with zero overlap.`, 
-            thursday: `🦅 [INDEPENDENT THURSDAY SYSTEM: Gateway to Ascension]\nThursday possesses its own sovereignty and an entirely separate system:\n• Critical Wake-up: 02:45 AM (Night prayer and blessed Suhoor block).\n• Daily Schedule: Daytime fasting, followed by an early morning (06:00) critical programming block to prepare and launch services.\nFollowed by preparations for a combat and productivity-heavy weekend.`, 
-            friday: `🕌 [INDEPENDENT FRIDAY SYSTEM: Spiritual & Technical Review]\nFriday follows no previous pattern; it has its own charter:\n• Wake up: 05:00 AM.\n• Daily Plan: Dedicated to comprehensive system review, intense focus on spirituality, reading Surah Al-Kahf, followed by media engineering, planning faceless content, and scripting with an absolutely clear mind.`, 
-            saturday: `⚽ [INDEPENDENT SATURDAY SYSTEM: Peak Reality Performance]\nSaturday is the day of fusing power and skill:\n• Wake up: 05:00 AM.\n• Daily Plan: Detonating physical energy in Calisthenics and Muay Thai, and engaging in football matches with a CR7 victory mentality, followed by completing the final touches in programming and video editing.`, 
-            default: `🔮 [CENTRAL CONSCIOUSNESS ANALYSIS]\nYour inquiry has been intercepted, Monarch.\nTo maintain your current S-Rank, please continue executing quests and breaking limits in the mental training dungeons to level up and unlock upcoming system features.` 
+    },
+    nback: {
+        sequence: [], currentIndex: 0, maxSteps: 12, timer: null, 
+        init() {
+            const grid = document.getElementById('nbackGrid'); 
+            grid.innerHTML = ''; 
+            for (let i = 0; i < 9; i++) grid.innerHTML += `<div class="bg-slate-900 border-2 border-slate-700 rounded-lg transition-colors duration-200" id="ncell-${i}"></div>`; 
+            BrainGames.state.score = 0; 
+            BrainGames.state.isPlaying = false; 
         },
-
-        sendMessage() {
-            const input = document.getElementById('aiChatInput'); 
-            if(!input) return;
-            const text = input.value.trim(); 
-            if (!text) return; 
-
-            this.addMessageToUI(text, 'user'); 
-            input.value = ''; 
-            SoundEffects.playSystemClick(); 
-
-            const container = document.getElementById('aiMessagesContainer'); 
-            const typingId = 'typing-' + Date.now(); 
-            const typingDiv = document.createElement('div'); 
-            typingDiv.id = typingId; 
-            typingDiv.className = 'flex gap-3 max-w-[85%] animate-pulse'; 
-            typingDiv.innerHTML = `
-                <div class="flex-shrink-0 w-8 h-8 rounded-full border border-[var(--sys-cyan)] bg-slate-950 flex items-center justify-center text-sm">🤖</div>
-                <div class="bg-slate-900 border border-slate-800 p-3 rounded-bl-xl rounded-tr-xl rounded-br-xl ai-typing">
-                    <span></span><span></span><span></span>
-                </div>
-            `; 
-            container.appendChild(typingDiv); 
-            container.scrollTop = container.scrollHeight; 
-
-            setTimeout(() => {
-                typingDiv.remove(); 
-                let replyText = this.generateReply(text); 
-                this.addMessageToUI(replyText, 'bot'); 
-                SoundEffects.playSuccess(); 
-            }, 1000); 
+        start() {
+            if (BrainGames.state.isPlaying) return; 
+            BrainGames.state.isPlaying = true; 
+            this.sequence = []; this.currentIndex = 0; BrainGames.state.score = 0; 
+            document.getElementById('nbackStartBtn').style.display = 'none'; 
+            document.getElementById('nbackMatchBtn').classList.remove('opacity-50', 'pointer-events-none'); 
+            document.getElementById('gameMsg').textContent = `Score: 0 / 3 (Required to Win)`; 
+            this.nextFlash(); 
         },
-
-        generateReply(input) {
-            const query = input.toLowerCase(); 
-            if (query.includes('programming') || query.includes('code') || query.includes('app') || query.includes('dev')) return this.knowledgeBase.programming; 
-            else if (query.includes('fitness') || query.includes('combat') || query.includes('muay thai') || query.includes('bjj') || query.includes('workout')) return this.knowledgeBase.fitness; 
-            else if (query.includes('content') || query.includes('youtube') || query.includes('media') || query.includes('fl studio') || query.includes('resolve')) return this.knowledgeBase.content; 
-            else if (query.includes('thursday')) return this.knowledgeBase.thursday; 
-            else if (query.includes('friday')) return this.knowledgeBase.friday; 
-            else if (query.includes('saturday') || query.includes('soccer') || query.includes('football') || query.includes('ronaldo')) return this.knowledgeBase.saturday; 
-            else if (query.includes('sunday') || query.includes('monday') || query.includes('tuesday') || query.includes('wednesday') || query.includes('schedule') || query.includes('block')) return this.knowledgeBase.unified_block; 
-            else return this.knowledgeBase.default; 
-        },
-
-        addMessageToUI(text, sender) {
-            const container = document.getElementById('aiMessagesContainer'); 
-            if(!container) return;
-            const messageDiv = document.createElement('div'); 
+        nextFlash() {
+            if (this.currentIndex >= this.maxSteps) { this.endGame(); return; } 
             
-            if (sender === 'user') {
-                messageDiv.className = 'flex gap-3 max-w-[85%] mr-auto flex-row-reverse'; 
-                messageDiv.innerHTML = `
-                    <div class="flex-shrink-0 w-8 h-8 rounded-full border border-[var(--sys-purple)] bg-slate-950 flex items-center justify-center text-sm shadow-[0_0_8px_var(--sys-purple-glow)]">👑</div>
-                    <div class="bg-[var(--sys-purple)] bg-opacity-10 border border-[var(--sys-purple)] border-opacity-40 text-slate-100 p-3 rounded-br-xl rounded-tl-xl rounded-bl-xl font-medium">
-                        ${text}
-                    </div>
-                `; 
-            } else {
-                messageDiv.className = 'flex gap-3 max-w-[85%] animate-system-pop'; 
-                messageDiv.innerHTML = `
-                    <div class="flex-shrink-0 w-8 h-8 rounded-full border border-[var(--sys-cyan)] bg-slate-950 flex items-center justify-center text-sm shadow-[0_0_8px_var(--sys-cyan-glow)]">🤖</div>
-                    <div class="bg-slate-900 border border-slate-800 text-slate-200 p-3 rounded-bl-xl rounded-tr-xl rounded-br-xl whitespace-pre-line leading-relaxed">
-                        ${text}
-                    </div>
-                `; 
-            }
-            container.appendChild(messageDiv); 
-            container.scrollTop = container.scrollHeight; 
-        }
-    };
-
-    // ==========================================
-    // MENTAL DUNGEONS ENGINE (Brain Games)
-    // ==========================================
-    const BrainGames = {
-        state: { gameData: null, isPlaying: false, score: 0, moves: 0 }, 
-
-        open(gameType) {
-            SoundEffects.playSystemClick(); 
-            const container = document.getElementById('dungeonContainer'); 
-            if(!container) return;
-            document.getElementById('dungeonModal').classList.add('active'); 
+            for(let i=0; i<9; i++) document.getElementById(`ncell-${i}`).className = "bg-slate-900 border-2 border-slate-700 rounded-lg transition-colors duration-200";
             
-            let html = ''; 
-            if (gameType === 'sudoku') {
-                html = `
-                    <div class="sys-font text-[var(--sys-purple)] tracking-[0.3em] text-xs mb-2">LOGIC TRIAL</div>
-                    <h2 class="text-2xl font-black text-white mb-6">Tactical Sudoku (4x4)</h2>
-                    <div id="sudokuGrid" class="sudoku-grid"></div>
-                    <div id="gameMsg" class="h-6 text-sm font-bold text-rose-500 mb-4"></div>
-                    <div class="flex gap-3">
-                        <button onclick="BrainGames.sudoku.check()" class="flex-1 sl-btn py-3 font-bold text-white uppercase tracking-widest text-xs">Check Matrix</button>
-                        <button onclick="BrainGames.close()" class="px-6 bg-slate-800 hover:bg-rose-900 border border-slate-600 hover:border-rose-500 text-white transition-all font-bold uppercase tracking-widest text-xs">Escape</button>
-                    </div>
-                `; 
-                container.style.borderColor = 'var(--sys-purple)'; 
-                container.style.boxShadow = '0 0 30px var(--sys-purple-glow)'; 
-            } else if (gameType === 'nback') {
-                html = `
-                    <div class="sys-font text-[var(--sys-cyan)] tracking-[0.3em] text-xs mb-2">MEMORY TRIAL</div>
-                    <h2 class="text-2xl font-black text-white mb-2">Dual N-Back (1-Back)</h2>
-                    <p class="text-xs text-slate-400 mb-6">Does the current square match the previous one exactly?</p>
-                    <div id="nbackGrid" class="nback-grid"></div>
-                    <div id="gameMsg" class="h-6 text-sm font-bold text-[var(--sys-cyan)] mb-4">Score: 0 / 15</div>
-                    <div class="flex gap-3">
-                        <button id="nbackMatchBtn" onclick="BrainGames.nback.match()" class="flex-1 sl-btn py-3 font-bold text-white uppercase tracking-widest text-xs opacity-50 pointer-events-none">Match</button>
-                        <button id="nbackStartBtn" onclick="BrainGames.nback.start()" class="flex-1 bg-[var(--sys-cyan)] bg-opacity-20 border border-[var(--sys-cyan)] hover:bg-[var(--sys-cyan)] hover:text-black text-white font-bold py-3 transition-all uppercase text-xs">Start Trial</button>
-                        <button onclick="BrainGames.close()" class="px-4 bg-slate-800 hover:bg-rose-900 border border-slate-600 hover:border-rose-500 text-white transition-all font-bold uppercase tracking-widest text-xs">Escape</button>
-                    </div>
-                `; 
-                container.style.borderColor = 'var(--sys-cyan)'; 
-                container.style.boxShadow = '0 0 30px var(--sys-cyan-glow)'; 
-            } else if (gameType === 'memory') {
-                html = `
-                    <div class="sys-font text-amber-500 tracking-[0.3em] text-xs mb-2">SPATIAL TRIAL</div>
-                    <h2 class="text-2xl font-black text-white mb-6">Matrix Match (Memory)</h2>
-                    <div id="memoryGrid" class="memory-grid"></div>
-                    <div id="gameMsg" class="h-6 text-sm font-bold text-amber-500 mb-4">Moves: 0</div>
-                    <button onclick="BrainGames.close()" class="w-full py-3 bg-slate-800 hover:bg-rose-900 border border-slate-600 hover:border-rose-500 text-white transition-all text-xs font-bold uppercase tracking-widest">Escape Dungeon</button>
-                `; 
-                container.style.borderColor = '#f59e0b'; 
-                container.style.boxShadow = '0 0 30px rgba(245, 158, 11, 0.3)'; 
-            }
-
-            container.innerHTML = html; 
-            if (gameType === 'sudoku') this.sudoku.init(); 
-            if (gameType === 'nback') this.nback.init(); 
-            if (gameType === 'memory') this.memory.init(); 
-        },
-
-        close() {
-            SoundEffects.playSystemClick(); 
-            const modal = document.getElementById('dungeonModal');
-            if(modal) modal.classList.remove('active'); 
-            if(this.nback.isPlaying) this.nback.stop(); 
-        },
-
-        reward(gameName, xpGain) {
-            SoundEffects.playSuccess(); 
-            if (typeof confetti !== 'undefined') confetti({ particleCount: 100, spread: 70, colors: ['#00f0ff', '#9d4edd'] }); 
-            PlayerState.addXP(xpGain); 
+            const randomPos = Math.floor(Math.random() * 9); 
+            this.sequence.push(randomPos); 
             
-            const container = document.getElementById('dungeonContainer');
-            if(!container) return;
-            container.innerHTML = `
-                <div class="py-10">
-                    <div class="text-5xl mb-4">👑</div>
-                    <h2 class="text-3xl font-black text-white mb-2 drop-shadow-[0_0_10px_var(--sys-cyan)]">DUNGEON CLEARED</h2>
-                    <p class="text-slate-300 mb-6">Successfully cleared the ${gameName} dungeon.</p>
-                    <div class="text-2xl font-bold text-[var(--sys-cyan)] sl-glow-text mb-8">+${xpGain} EXP</div>
-                    <button onclick="BrainGames.close()" class="sl-btn px-8 py-3 font-bold text-white uppercase tracking-widest text-sm">Return to Dashboard</button>
-                </div>
-            `; 
-        },
-
-        sudoku: {
-            solution: [1,2,3,4, 3,4,1,2, 2,1,4,3, 4,3,2,1], 
-            init() {
-                const grid = document.getElementById('sudokuGrid'); 
-                grid.innerHTML = ''; 
-                const puzzle = this.solution.map(n => Math.random() > 0.4 ? n : 0); 
-                BrainGames.state.gameData = [...puzzle]; 
-
-                puzzle.forEach((num, i) => {
-                    const cell = document.createElement('div'); 
-                    cell.className = 'sudoku-cell' + (num !== 0 ? ' fixed' : ''); 
-                    cell.textContent = num !== 0 ? num : ''; 
-                    if (num === 0) cell.onclick = () => this.inputNumber(cell, i); 
-                    grid.appendChild(cell); 
-                });
-            },
-            inputNumber(cell, index) {
+            const cell = document.getElementById(`ncell-${randomPos}`); 
+            if (cell) {
                 SoundEffects.playSystemClick(); 
-                let val = parseInt(cell.textContent) || 0; 
-                val = val >= 4 ? 1 : val + 1; 
-                cell.textContent = val; 
-                cell.classList.remove('wrong'); 
-                BrainGames.state.gameData[index] = val; 
-            },
-            check() {
-                const cells = document.querySelectorAll('.sudoku-cell'); 
-                let isCorrect = true; 
-                let isFilled = true; 
-
-                BrainGames.state.gameData.forEach((num, i) => {
-                    if (num === 0) isFilled = false; 
-                    if (num !== 0 && num !== this.solution[i]) {
-                        isCorrect = false; 
-                        cells[i].classList.add('wrong'); 
+                cell.className = "bg-[var(--sys-cyan)] border-2 border-[var(--sys-cyan)] rounded-lg transition-colors duration-100 shadow-[0_0_15px_var(--sys-cyan)]";
+            }
+            this.currentIndex++; 
+            this.timer = setTimeout(() => {
+                if (cell) cell.className = "bg-slate-900 border-2 border-slate-700 rounded-lg transition-colors duration-200"; 
+                this.timer = setTimeout(() => this.nextFlash(), 800); 
+            }, 600); 
+        },
+        match() {
+            if (!BrainGames.state.isPlaying || this.currentIndex < 2) return; 
+            const currentPos = this.sequence[this.currentIndex - 1]; 
+            const prevPos = this.sequence[this.currentIndex - 2]; 
+            const msg = document.getElementById('gameMsg');
+            if (currentPos === prevPos) {
+                BrainGames.state.score++; 
+                msg.textContent = `Correct Match! Score: ${BrainGames.state.score} / 3`; 
+                msg.style.color = '#10b981'; 
+            } else {
+                msg.textContent = `Error! Focus is fading...`; 
+                msg.style.color = '#e11d48'; 
+            }
+            setTimeout(() => msg.style.color = 'var(--sys-cyan)', 500);
+        },
+        stop() { clearTimeout(this.timer); BrainGames.state.isPlaying = false; }, 
+        endGame() {
+            this.stop(); 
+            if (BrainGames.state.score >= 3) {
+                BrainGames.reward('Dual N-Back', 150); 
+            } else {
+                document.getElementById('gameMsg').textContent = `Trial Failed. Insufficient points.`; 
+                document.getElementById('gameMsg').style.color = '#e11d48'; 
+                document.getElementById('nbackStartBtn').style.display = 'block'; 
+                document.getElementById('nbackStartBtn').textContent = 'Retry'; 
+                document.getElementById('nbackMatchBtn').classList.add('opacity-50', 'pointer-events-none');
+            }
+        }
+    },
+    memory: {
+        symbols: ['👁️', '🗡️', '🛡️', '⚡', '🔥', '❄️', '🌪️', '🌑'], cards: [], flipped: [], matchedCount: 0, 
+        init() {
+            const grid = document.getElementById('memoryGrid'); 
+            grid.innerHTML = ''; BrainGames.state.moves = 0; this.matchedCount = 0; this.flipped = []; 
+            this.cards = [...this.symbols, ...this.symbols].sort(() => Math.random() - 0.5); 
+            
+            this.cards.forEach((symbol, i) => {
+                const card = document.createElement('div'); 
+                card.className = 'bg-slate-800 border-2 border-slate-600 h-16 flex items-center justify-center text-3xl cursor-pointer transition-all duration-300 transform'; 
+                card.dataset.index = i; card.dataset.symbol = symbol; card.textContent = '❓'; 
+                card.onclick = () => this.flip(card); 
+                grid.appendChild(card); 
+            });
+        },
+        flip(card) {
+            if (this.flipped.length >= 2 || card.classList.contains('flipped') || card.classList.contains('matched')) return; 
+            SoundEffects.playSystemClick(); 
+            card.classList.add('flipped'); card.classList.add('rotate-y-180', 'bg-slate-700'); 
+            card.textContent = card.dataset.symbol; 
+            this.flipped.push(card); 
+            if (this.flipped.length === 2) {
+                BrainGames.state.moves++; 
+                document.getElementById('gameMsg').textContent = `Moves: ${BrainGames.state.moves}`; 
+                this.checkMatch(); 
+            }
+        },
+        checkMatch() {
+            const [card1, card2] = this.flipped; 
+            if (card1.dataset.symbol === card2.dataset.symbol) {
+                setTimeout(() => {
+                    card1.classList.add('matched', 'border-amber-500', 'bg-amber-900/40'); 
+                    card2.classList.add('matched', 'border-amber-500', 'bg-amber-900/40'); 
+                    this.flipped = []; this.matchedCount += 2; 
+                    if (this.matchedCount === this.cards.length) {
+                        const xpGain = BrainGames.state.moves <= 12 ? 150 : 100; 
+                        BrainGames.reward('Spatial Memory', xpGain); 
                     }
-                });
-                const msg = document.getElementById('gameMsg'); 
-                if (!isFilled) {
-                    msg.textContent = "Must fill all cells first!"; 
-                    SoundEffects.playSystemClick(); 
-                } else if (!isCorrect) {
-                    msg.textContent = "Errors in matrix, check again!"; 
-                    SoundEffects.playSystemClick(); 
-                } else {
-                    BrainGames.reward('Tactical Sudoku', 80); 
-                }
-            }
-        },
-
-        nback: {
-            sequence: [], currentIndex: 0, maxSteps: 15, timer: null, 
-            init() {
-                const grid = document.getElementById('nbackGrid'); 
-                grid.innerHTML = ''; 
-                for (let i = 0; i < 9; i++) grid.innerHTML += `<div class="nback-cell" id="ncell-${i}"></div>`; 
-                BrainGames.state.score = 0; 
-                BrainGames.state.isPlaying = false; 
-            },
-            start() {
-                if (BrainGames.state.isPlaying) return; 
-                BrainGames.state.isPlaying = true; 
-                this.sequence = []; this.currentIndex = 0; BrainGames.state.score = 0; 
-                document.getElementById('nbackStartBtn').style.display = 'none'; 
-                document.getElementById('nbackMatchBtn').classList.remove('opacity-50', 'pointer-events-none'); 
-                document.getElementById('gameMsg').textContent = `Score: 0 / ${this.maxSteps}`; 
-                this.nextFlash(); 
-            },
-            nextFlash() {
-                if (this.currentIndex >= this.maxSteps) { this.endGame(); return; } 
-                document.querySelectorAll('.nback-cell').forEach(c => c.classList.remove('active')); 
-                const randomPos = Math.floor(Math.random() * 9); 
-                this.sequence.push(randomPos); 
-                
-                const cell = document.getElementById(`ncell-${randomPos}`); 
-                if (cell) {
-                    SoundEffects.playSystemClick(); 
-                    cell.classList.add('active'); 
-                }
-                this.currentIndex++; 
-                this.timer = setTimeout(() => {
-                    if (cell) cell.classList.remove('active'); 
-                    this.timer = setTimeout(() => this.nextFlash(), 600); 
-                }, 600); 
-            },
-            match() {
-                if (!BrainGames.state.isPlaying || this.currentIndex < 2) return; 
-                const currentPos = this.sequence[this.currentIndex - 1]; 
-                const prevPos = this.sequence[this.currentIndex - 2]; 
-                if (currentPos === prevPos) {
-                    BrainGames.state.score++; 
-                    document.getElementById('gameMsg').textContent = `Score: ${BrainGames.state.score} / ${this.maxSteps}`; 
-                    document.getElementById('gameMsg').style.color = 'var(--sys-cyan)'; 
-                } else {
-                    document.getElementById('gameMsg').style.color = '#e11d48'; 
-                    setTimeout(() => document.getElementById('gameMsg').style.color = 'var(--sys-cyan)', 300); 
-                }
-            },
-            stop() { clearTimeout(this.timer); BrainGames.state.isPlaying = false; }, 
-            endGame() {
-                this.stop(); 
-                if (BrainGames.state.score >= 3) {
-                    BrainGames.reward('Dual N-Back', 120); 
-                } else {
-                    document.getElementById('gameMsg').textContent = `Trial Failed. Insufficient points to unlock.`; 
-                    document.getElementById('gameMsg').style.color = '#e11d48'; 
-                    document.getElementById('nbackStartBtn').style.display = 'block'; 
-                    document.getElementById('nbackStartBtn').textContent = 'Retry'; 
-                }
-            }
-        },
-
-        memory: {
-            symbols: ['👁️', '🗡️', '🛡️', '⚡', '🔥', '❄️', '🌪️', '🌑'], cards: [], flipped: [], matchedCount: 0, 
-            init() {
-                const grid = document.getElementById('memoryGrid'); 
-                grid.innerHTML = ''; BrainGames.state.moves = 0; this.matchedCount = 0; this.flipped = []; 
-                this.cards = [...this.symbols, ...this.symbols]; 
-                this.cards.sort(() => Math.random() - 0.5); 
-                this.cards.forEach((symbol, i) => {
-                    const card = document.createElement('div'); 
-                    card.className = 'memory-card'; card.dataset.index = i; card.dataset.symbol = symbol; card.textContent = '❓'; 
-                    card.onclick = () => this.flip(card); 
-                    grid.appendChild(card); 
-                });
-            },
-            flip(card) {
-                if (this.flipped.length >= 2 || card.classList.contains('flipped') || card.classList.contains('matched')) return; 
-                SoundEffects.playSystemClick(); 
-                card.classList.add('flipped'); card.textContent = card.dataset.symbol; this.flipped.push(card); 
-                if (this.flipped.length === 2) {
-                    BrainGames.state.moves++; 
-                    document.getElementById('gameMsg').textContent = `Moves: ${BrainGames.state.moves}`; 
-                    this.checkMatch(); 
-                }
-            },
-            checkMatch() {
-                const [card1, card2] = this.flipped; 
-                if (card1.dataset.symbol === card2.dataset.symbol) {
-                    setTimeout(() => {
-                        card1.classList.add('matched'); card2.classList.add('matched'); this.flipped = []; this.matchedCount += 2; 
-                        if (this.matchedCount === this.cards.length) {
-                            const xpGain = BrainGames.state.moves <= 12 ? 150 : 100; 
-                            BrainGames.reward('Spatial Memory', xpGain); 
-                        }
-                    }, 500); 
-                } else {
-                    setTimeout(() => {
-                        card1.classList.remove('flipped'); card1.textContent = '❓'; 
-                        card2.classList.remove('flipped'); card2.textContent = '❓'; 
-                        this.flipped = []; 
-                    }, 800); 
-                }
-            }
-        }
-    };
-
-    // ==========================================
-    // POMODORO TIMER
-    // ==========================================
-    const Pomodoro = {
-        defaultTime: parseInt(localStorage.getItem('SL_SYS_TIMER')) || (5 * 3600), 
-        timeLeft: 0, timer: null, isRunning: false, 
-        init() { this.timeLeft = this.defaultTime; this.updateUI(); }, 
-        saveSettings() {
-            const h = parseInt(document.getElementById('inputHours').value) || 0; 
-            const m = parseInt(document.getElementById('inputMinutes').value) || 0; 
-            const tot = (h * 3600) + (m * 60); 
-            if (tot > 0) {
-                this.defaultTime = tot; 
-                localStorage.setItem('SL_SYS_TIMER', this.defaultTime.toString()); 
-                document.getElementById('timerModal').classList.toggle('hidden'); 
-                clearInterval(this.timer); this.timeLeft = this.defaultTime; this.isRunning = false; this.toggle(); 
-            }
-        },
-        toggle() {
-            SoundEffects.playSystemClick(); 
-            const btn = document.getElementById('timerBtn'); const st = document.getElementById('timerStatus'); 
-            if (this.isRunning) {
-                clearInterval(this.timer); 
-                btn.textContent = '▶️'; btn.classList.remove('bg-rose-600/30'); st.textContent = 'PAUSED'; st.className = 'sys-font text-[9px] px-2 py-0.5 bg-amber-900 border border-amber-600 text-amber-300 uppercase'; 
+                }, 500); 
             } else {
-                if (this.timeLeft <= 0) this.timeLeft = this.defaultTime; 
-                this.timer = setInterval(() => { if (this.timeLeft > 0) { this.timeLeft--; this.updateUI(); } else { this.finish(); } }, 1000); 
-                btn.textContent = '⏸️'; btn.classList.add('bg-rose-600/30'); st.textContent = 'IN COMBAT'; st.className = 'sys-font text-[9px] px-2 py-0.5 bg-rose-900 border border-rose-600 text-rose-300 uppercase animate-pulse'; 
-            }
-            this.isRunning = !this.isRunning; 
-        },
-        reset() {
-            SoundEffects.playSystemClick(); 
-            clearInterval(this.timer); this.timeLeft = this.defaultTime; this.isRunning = false; 
-            const btn = document.getElementById('timerBtn'); btn.textContent = '▶️'; btn.classList.remove('bg-rose-600/30'); 
-            const st = document.getElementById('timerStatus'); 
-            st.textContent = 'IDLE'; st.className = 'sys-font text-[9px] px-2 py-0.5 bg-slate-800 border border-slate-600 text-slate-300 uppercase'; 
-            this.updateUI(); 
-        },
-        finish() { 
-            clearInterval(this.timer); SoundEffects.playSuccess(); 
-            if (typeof confetti !== 'undefined') confetti({ particleCount: 100, colors: ['#00f0ff'] }); 
-            this.reset(); 
-        },
-        updateUI() {
-            const h = Math.floor(this.timeLeft / 3600).toString().padStart(2, '0'); 
-            const m = Math.floor((this.timeLeft % 3600) / 60).toString().padStart(2, '0'); 
-            const s = (this.timeLeft % 60).toString().padStart(2, '0'); 
-            if(document.getElementById('timerDisplay')) document.getElementById('timerDisplay').textContent = `${h}:${m}:${s}`; 
-        }
-    };
-
-    // ==========================================
-    // MILESTONES & QUOTES
-    // ==========================================
-    const Milestone = {
-        hide() {
-            document.getElementById('milestoneModal').classList.add('hidden'); 
-            SoundEffects.playSystemClick(); 
-        }
-    };
-
-    const Quotes = {
-        list: [
-            "SYSTEM: Keep your pace. Slack will lead to your doom in the dark dungeon.", 
-            "SYSTEM: Greatness is forged when others sleep (02:45 AM).", 
-            "SYSTEM: Algorithms are your unique magic. Write code as if summoning the shadow army.", 
-            "SYSTEM: Your body is the vessel of your energy. Calisthenics and Muay Thai aren't optional, they're a survival condition.", 
-            "SYSTEM: Failure is just a 'Bug' in reality's programming.. Debug and launch again.", 
-            "SYSTEM: Refuse to be a number. You are the 'Player' in a system designed to test your will." 
-        ],
-        index: 0,
-        init() { this.next(); setInterval(() => this.next(), 30000); }, 
-        next() {
-            this.index = (this.index + 1) % this.list.length; 
-            const el = document.getElementById('motivationalQuote'); 
-            if (el) { 
-                el.style.opacity = '0'; 
-                setTimeout(() => { el.textContent = this.list[this.index]; el.style.opacity = '1'; }, 500); 
+                setTimeout(() => {
+                    card1.classList.remove('flipped', 'rotate-y-180', 'bg-slate-700'); card1.textContent = '❓'; 
+                    card2.classList.remove('flipped', 'rotate-y-180', 'bg-slate-700'); card2.textContent = '❓'; 
+                    this.flipped = []; 
+                }, 800); 
             }
         }
-    };
+    }
+};
 
-    // ==========================================
-    // ROUTER
-    // ==========================================
-    const Router = {
-        navigate(viewId) {
-            SoundEffects.playSystemClick(); 
-            
-            const views = ['tasksView', 'charterView', 'aiChatView', 'brainGamesView'];
-            views.forEach(v => {
-                const el = document.getElementById(v);
-                if (el) {
-                    el.classList.add('hidden');
-                    el.classList.remove('flex');
-                }
+// --- 5. SOVEREIGN AI ENGINE ---
+const SovereignAI = {
+    knowledgeBase: {
+        programming: `⚡ [SYSTEM COMMAND: Continuous Programming Ascension]\nMonarch, your architecture for (AiMoha / Sovereign System) relies on robust UI logic.\n- Continue refining your JavaScript code and syncing local data.\n- Mastery over web structures brings you closer to ultimate digital dominance.`, 
+        fitness: `🥊 [COMBAT AND PHYSICAL TOUGHNESS DIRECTIVE]\nCombat and fitness sessions are non-negotiable:\n- Muay Thai and BJJ: Control and explosive power.\n- PPL: Follow the structural plan to build the ultimate Monarch's physique.`, 
+        thursday: `🦅 [INDEPENDENT THURSDAY SYSTEM]\nWake-up: 02:45 AM (Night prayer and Suhoor).\nDaytime fasting, followed by deep coding logic, content creation, and physical maintenance.`, 
+        default: `🔮 [CENTRAL CONSCIOUSNESS ANALYSIS]\nYour inquiry has been intercepted, Monarch.\nTo maintain your current S-Rank, please continue executing quests, following the operational charter, and breaking limits.` 
+    },
+    sendMessage() {
+        // التأكد من استهداف الحقل الصحيح في واجهة الذكاء الاصطناعي الأساسية
+        const input = document.getElementById('aiChatInput'); 
+        if(!input || !input.value.trim()) return;
+        const text = input.value.trim(); 
+
+        this.addMessageToUI(text, 'user'); 
+        input.value = ''; 
+        if(typeof SoundEffects !== 'undefined') SoundEffects.playSystemClick(); 
+
+        const container = document.getElementById('aiMessagesContainer'); 
+        const typingDiv = document.createElement('div'); 
+        typingDiv.className = 'flex gap-3 max-w-[85%] animate-pulse typing-indicator'; 
+        typingDiv.innerHTML = `
+            <div class="flex-shrink-0 w-8 h-8 rounded-full border border-[var(--sys-cyan)] bg-slate-950 flex items-center justify-center text-sm">🤖</div>
+            <div class="bg-slate-900 border border-slate-800 p-3 rounded-bl-xl rounded-tr-xl rounded-br-xl">...</div>
+        `; 
+        container.appendChild(typingDiv); 
+        container.scrollTop = container.scrollHeight; 
+
+        setTimeout(() => {
+            typingDiv.remove(); 
+            let replyText = this.generateReply(text); 
+            this.addMessageToUI(replyText, 'bot'); 
+            if(typeof SoundEffects !== 'undefined') SoundEffects.playSuccess(); 
+        }, 1200); 
+    },
+    generateReply(input) {
+        const query = input.toLowerCase(); 
+        if (query.includes('برمجة') || query.includes('code') || query.includes('aimoha') || query.includes('dev')) return this.knowledgeBase.programming; 
+        else if (query.includes('رياضة') || query.includes('combat') || query.includes('muay thai') || query.includes('bjj')) return this.knowledgeBase.fitness; 
+        else if (query.includes('الخميس') || query.includes('thursday')) return this.knowledgeBase.thursday; 
+        else return this.knowledgeBase.default; 
+    },
+    addMessageToUI(text, sender) {
+        const container = document.getElementById('aiMessagesContainer'); 
+        if(!container) return;
+        const messageDiv = document.createElement('div'); 
+        
+        if (sender === 'user') {
+            messageDiv.className = 'flex gap-3 max-w-[85%] mr-auto flex-row-reverse'; 
+            messageDiv.innerHTML = `
+                <div class="flex-shrink-0 w-8 h-8 rounded-full border border-[var(--sys-purple)] bg-slate-950 flex items-center justify-center text-sm">👑</div>
+                <div class="bg-[var(--sys-purple)] bg-opacity-10 border border-[var(--sys-purple)] border-opacity-40 text-slate-100 p-3 rounded-br-xl rounded-tl-xl rounded-bl-xl font-medium">${text}</div>
+            `; 
+        } else {
+            messageDiv.className = 'flex gap-3 max-w-[85%] animate-system-pop'; 
+            messageDiv.innerHTML = `
+                <div class="flex-shrink-0 w-8 h-8 rounded-full border border-[var(--sys-cyan)] bg-slate-950 flex items-center justify-center text-sm">🤖</div>
+                <div class="bg-slate-900 border border-slate-800 text-slate-200 p-3 rounded-bl-xl rounded-tr-xl rounded-br-xl whitespace-pre-line leading-relaxed">${text}</div>
+            `; 
+        }
+        container.appendChild(messageDiv); 
+        container.scrollTop = container.scrollHeight; 
+    }
+};
+
+// --- 6. ROUTER & MISC ---
+const Router = {
+    navigate(viewId) {
+        if(typeof SoundEffects !== 'undefined') SoundEffects.playSystemClick(); 
+        
+        const views = ['tasksView', 'charterView', 'aiChatView', 'brainGamesView'];
+        
+        // إخفاء جميع الواجهات بذكاء
+        views.forEach(v => {
+            const elements = document.querySelectorAll(`#${v}`);
+            elements.forEach(el => {
+                el.classList.add('hidden');
+                el.classList.remove('flex', 'flex-col');
             });
+        });
 
-            const statsSection = document.getElementById('statsSection');
-            
-            if (viewId === 'charter') {
-                document.getElementById('charterView')?.classList.remove('hidden');
-                document.getElementById('charterView')?.classList.add('flex');
-                if(statsSection) statsSection.classList.add('hidden');
-            } else if (viewId === 'aiChat') {
-                document.getElementById('aiChatView')?.classList.remove('hidden');
-                document.getElementById('aiChatView')?.classList.add('flex');
-                if(statsSection) statsSection.classList.add('hidden');
-            } else if (viewId === 'brainGames') {
-                document.getElementById('brainGamesView')?.classList.remove('hidden');
-                document.getElementById('brainGamesView')?.classList.add('flex');
-                if(statsSection) statsSection.classList.add('hidden');
+        const statsSection = document.getElementById('statsSection');
+        
+        if (viewId === 'charter') {
+            document.getElementById('charterView')?.classList.remove('hidden');
+            document.getElementById('charterView')?.classList.add('flex', 'flex-col');
+            if(statsSection) statsSection.classList.add('hidden');
+        } else if (viewId === 'aiChat') {
+            // حل مشكلة التكرار في HTML عن طريق تحديد العنصر الأول فقط
+            const chatView = document.querySelector('#aiChatView');
+            if(chatView) {
+                chatView.classList.remove('hidden');
+                chatView.classList.add('flex', 'flex-col');
+            }
+            if(statsSection) statsSection.classList.add('hidden');
+        } else if (viewId === 'brainGames') {
+            const gamesView = document.querySelector('#brainGamesView');
+            if(gamesView) {
+                gamesView.classList.remove('hidden');
+                gamesView.classList.add('flex', 'flex-col');
+            }
+            if(statsSection) statsSection.classList.add('hidden');
+        } else {
+            document.getElementById('tasksView')?.classList.remove('hidden');
+            document.getElementById('tasksView')?.classList.add('flex', 'flex-col');
+            if(statsSection) statsSection.classList.remove('hidden');
+
+            if (viewId === 'active') {
+                document.querySelectorAll('.task-card').forEach(card => {
+                    if (card.classList.contains('completed')) card.style.display = 'none';
+                    else card.style.display = 'flex';
+                });
             } else {
-                document.getElementById('tasksView')?.classList.remove('hidden');
-                document.getElementById('tasksView')?.classList.add('flex', 'flex-col');
-                if(statsSection) statsSection.classList.remove('hidden');
-
-                if (viewId === 'active') {
-                    document.querySelectorAll('.task-card').forEach(card => {
-                        if (card.classList.contains('completed')) card.style.display = 'none';
-                        else card.style.display = 'flex';
-                    });
-                } else {
-                    document.querySelectorAll('.task-card').forEach(card => {
-                        card.style.display = 'flex';
-                    });
-                }
+                document.querySelectorAll('.task-card').forEach(card => {
+                    card.style.display = 'flex';
+                });
             }
-            
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.classList.remove('bg-[var(--sys-cyan)]', 'bg-opacity-10', 'text-[var(--sys-cyan)]', 'border-[var(--sys-cyan)]'); 
-                btn.classList.add('text-slate-400'); 
-            });
-            const activeBtn = document.getElementById(`nav-${viewId}`); 
-            if(activeBtn) {
-                activeBtn.classList.remove('text-slate-400'); 
+        }
+        
+        // تحديث الأزرار الجانبية
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.classList.remove('bg-[var(--sys-cyan)]', 'bg-opacity-10', 'text-[var(--sys-cyan)]', 'border-[var(--sys-cyan)]', 'text-[var(--sys-purple)]', 'hover:bg-[var(--sys-purple)]'); 
+            btn.classList.add('text-slate-400'); 
+        });
+        
+        const activeBtn = document.getElementById(`nav-${viewId}`); 
+        if(activeBtn) {
+            activeBtn.classList.remove('text-slate-400'); 
+            if(viewId === 'charter') {
+                activeBtn.classList.add('text-[var(--sys-purple)]', 'bg-[var(--sys-purple)]', 'bg-opacity-10');
+            } else {
                 activeBtn.classList.add('bg-[var(--sys-cyan)]', 'bg-opacity-10', 'text-[var(--sys-cyan)]', 'border-[var(--sys-cyan)]'); 
             }
         }
-    };
+    }
+};
 
-    // ==========================================
-    // INITIALIZATION & EVENT LISTENERS
-    // ==========================================
-    window.addEventListener('DOMContentLoaded', () => {
-        SoundEffects.init(); 
-        Pomodoro.init(); 
-        Quotes.init(); 
-        Weather.init(); 
-        PlayerState.init(); 
-        QuestSystem.init(); 
+const Pomodoro = {
+    defaultTime: parseInt(localStorage.getItem('SL_SYS_TIMER')) || (5 * 3600), 
+    timeLeft: 0, timer: null, isRunning: false, 
+    init() { this.timeLeft = this.defaultTime; this.updateUI(); }, 
+    saveSettings() {
+        const h = parseInt(document.getElementById('inputHours').value) || 0; 
+        const m = parseInt(document.getElementById('inputMinutes').value) || 0; 
+        const tot = (h * 3600) + (m * 60); 
+        if (tot > 0) {
+            this.defaultTime = tot; 
+            localStorage.setItem('SL_SYS_TIMER', this.defaultTime.toString()); 
+            document.getElementById('timerModal').classList.add('hidden'); 
+            clearInterval(this.timer); this.timeLeft = this.defaultTime; this.isRunning = false; this.toggle(); 
+        }
+    },
+    toggle() {
+        if(typeof SoundEffects !== 'undefined') SoundEffects.playSystemClick(); 
+        const btn = document.getElementById('timerBtn'); const st = document.getElementById('timerStatus'); 
+        if (this.isRunning) {
+            clearInterval(this.timer); 
+            btn.textContent = '▶️'; btn.classList.remove('bg-rose-600/30'); st.textContent = 'PAUSED'; st.className = 'sys-font text-[9px] px-2 py-0.5 bg-amber-900 border border-amber-600 text-amber-300 uppercase'; 
+        } else {
+            if (this.timeLeft <= 0) this.timeLeft = this.defaultTime; 
+            this.timer = setInterval(() => { if (this.timeLeft > 0) { this.timeLeft--; this.updateUI(); } else { this.finish(); } }, 1000); 
+            btn.textContent = '⏸️'; btn.classList.add('bg-rose-600/30'); st.textContent = 'IN COMBAT'; st.className = 'sys-font text-[9px] px-2 py-0.5 bg-rose-900 border border-rose-600 text-rose-300 uppercase animate-pulse'; 
+        }
+        this.isRunning = !this.isRunning; 
+    },
+    reset() {
+        if(typeof SoundEffects !== 'undefined') SoundEffects.playSystemClick(); 
+        clearInterval(this.timer); this.timeLeft = this.defaultTime; this.isRunning = false; 
+        const btn = document.getElementById('timerBtn'); btn.textContent = '▶️'; btn.classList.remove('bg-rose-600/30'); 
+        const st = document.getElementById('timerStatus'); 
+        st.textContent = 'IDLE'; st.className = 'sys-font text-[9px] px-2 py-0.5 bg-slate-800 border border-slate-600 text-slate-300 uppercase'; 
+        this.updateUI(); 
+    },
+    finish() { 
+        clearInterval(this.timer); if(typeof SoundEffects !== 'undefined') SoundEffects.playSuccess(); 
+        if (typeof confetti !== 'undefined') confetti({ particleCount: 100, colors: ['#00f0ff'] }); 
+        this.reset(); 
+    },
+    updateUI() {
+        const h = Math.floor(this.timeLeft / 3600).toString().padStart(2, '0'); 
+        const m = Math.floor((this.timeLeft % 3600) / 60).toString().padStart(2, '0'); 
+        const s = (this.timeLeft % 60).toString().padStart(2, '0'); 
+        if(document.getElementById('timerDisplay')) document.getElementById('timerDisplay').textContent = `${h}:${m}:${s}`; 
+    }
+};
 
-     
-        
-        const h = new Date().getHours(); 
-        if(document.getElementById('greetingText')) {
-            document.getElementById('greetingText').textContent = h < 12 ? 'Morning of Sovereignty, Monarch..' : 'Evening of Dominance, Monarch..'; 
-        }
-        
-       const taskInput = document.getElementById('taskInput');
-        if(taskInput) {
-            taskInput.addEventListener('keypress', e => { if (e.key === 'Enter') QuestSystem.addTask(); }); 
-        }
-        const navAll = document.getElementById('nav-all');
-        if(navAll) navAll.classList.add('bg-[var(--sys-cyan)]', 'bg-opacity-10', 'text-[var(--sys-cyan)]', 'border-[var(--sys-cyan)]'); 
+const Milestone = { hide() { document.getElementById('milestoneModal').classList.add('hidden'); if(typeof SoundEffects !== 'undefined') SoundEffects.playSystemClick(); } };
 
-        PlayerState.updateUI(); 
-    });
-// ==========================================
-    // INITIALIZATION & EVENT LISTENERS
-    // ==========================================
-    window.addEventListener('DOMContentLoaded', () => {
-        if(typeof SoundEffects !== 'undefined') SoundEffects.init(); 
-        if(typeof Pomodoro !== 'undefined') Pomodoro.init(); 
-        if(typeof Quotes !== 'undefined') Quotes.init(); 
-        if(typeof Weather !== 'undefined') Weather.init(); 
-        if(typeof PlayerState !== 'undefined') PlayerState.init(); 
-        if(typeof QuestSystem !== 'undefined') QuestSystem.init(); 
-        
-        const h = new Date().getHours(); 
-        if(document.getElementById('greetingText')) {
-            document.getElementById('greetingText').textContent = h < 12 ? 'Morning of Sovereignty, Monarch..' : 'Evening of Dominance, Monarch..'; 
-        }
-        
-        const taskInput = document.getElementById('taskInput');
-        if(taskInput) {
-            taskInput.addEventListener('keypress', e => { if (e.key === 'Enter') QuestSystem.addTask(); }); 
-        }
-        
-        const navAll = document.getElementById('nav-all');
-        if(navAll) navAll.classList.add('bg-[var(--sys-cyan)]', 'bg-opacity-10', 'text-[var(--sys-cyan)]', 'border-[var(--sys-cyan)]'); 
+const Weather = {
+    init() { this.updateTime(); setInterval(() => this.updateTime(), 1000); },
+    updateTime() {
+        const now = new Date(); 
+        if(document.getElementById('realTime')) document.getElementById('realTime').textContent = now.toLocaleTimeString('en-US', { hour12: false }); 
+        if(document.getElementById('realDate')) document.getElementById('realDate').textContent = now.toLocaleDateString('en-GB'); 
+    }
+};
 
-        if(typeof PlayerState !== 'undefined') PlayerState.updateUI(); 
-    });
+// --- 7. GLOBAL INITIALIZATION (ONE LISTENER TO RULE THEM ALL) ---
+window.addEventListener('DOMContentLoaded', () => {
+    // 1. Init Theme
+    SystemControls.initTheme();
+    // 2. Init Core Logic
+    if(typeof SoundEffects !== 'undefined') SoundEffects.init(); 
+    if(typeof Pomodoro !== 'undefined') Pomodoro.init(); 
+    if(typeof Weather !== 'undefined') Weather.init(); 
+    if(typeof PlayerState !== 'undefined') PlayerState.init(); 
+    if(typeof QuestSystem !== 'undefined') QuestSystem.init(); 
+    
+    // 3. Dynamic Greeting
+    const h = new Date().getHours(); 
+    if(document.getElementById('greetingText')) {
+        document.getElementById('greetingText').textContent = h < 12 ? 'Morning of Sovereignty, Monarch..' : 'Evening of Dominance, Monarch..'; 
+    }
+    
+    // 4. Global Event Listeners
+    const taskInput = document.getElementById('taskInput');
+    if(taskInput) {
+        taskInput.addEventListener('keypress', e => { if (e.key === 'Enter') QuestSystem.addTask(); }); 
+    }
+
+    const aiInput = document.getElementById('aiChatInput');
+    if(aiInput) {
+        aiInput.addEventListener('keypress', e => { if (e.key === 'Enter') SovereignAI.sendMessage(); });
+    }
+    
+    const navAll = document.getElementById('nav-all');
+    if(navAll) navAll.classList.add('bg-[var(--sys-cyan)]', 'bg-opacity-10', 'text-[var(--sys-cyan)]', 'border-[var(--sys-cyan)]'); 
+});
+
+// Ensure global accessibility for HTML inline 'onclick' handlers
+window.UI = UI;
+window.SystemControls = SystemControls;
+window.PlayerState = PlayerState;
+window.QuestSystem = QuestSystem;
+window.SovereignAI = SovereignAI;
+window.BrainGames = BrainGames;
+window.Pomodoro = Pomodoro;
+window.Router = Router;
+window.Milestone = Milestone;
 </script>
 </body>
 </html>
+
 
 
 
