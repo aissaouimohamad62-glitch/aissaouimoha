@@ -83,34 +83,42 @@
 
     <script>
 // ==========================================
-        // 1. STATE SYNC (مزامنة الخصائص مع الرئيسية)
+        // 1. SAFE STATE SYNC (مزامنة دقيقة مع الرئيسية)
         // ==========================================
         const PlayerState = {
-            data: { level: 1, xp: 0, stats: { int: 10 } },
+            data: {},
             init() {
-                // استدعاء البيانات من الـ LocalStorage (نفس المفتاح المستخدم في الرئيسية)
-                const saved = localStorage.getItem('SL_PLAYER_STATE');
+                // استخدام نفس المفتاح الخاص بالصفحة الرئيسية
+                const saved = localStorage.getItem('monarch_system_data');
                 if(saved) {
                     this.data = JSON.parse(saved);
+                } else {
+                    this.data = { level: 1, xp: 0, ap: 0, stats: { str: 10, agi: 10, vit: 10, int: 10, sen: 10 }, gold: 0, authority: 0, lethality: 0 };
                 }
                 this.updateUI();
             },
             save() {
-                localStorage.setItem('SL_PLAYER_STATE', JSON.stringify(this.data));
+                // حفظ البيانات في نفس المفتاح
+                localStorage.setItem('monarch_system_data', JSON.stringify(this.data));
                 this.updateUI();
             },
             updateUI() {
-                if(document.getElementById('currentLevel')) document.getElementById('currentLevel').textContent = this.data.level;
-                if(document.getElementById('stat-int')) document.getElementById('stat-int').textContent = this.data.stats.int;
+                if(document.getElementById('currentLevel')) document.getElementById('currentLevel').textContent = this.data.level || 1;
+                if(document.getElementById('stat-int')) document.getElementById('stat-int').textContent = this.data.stats?.int || 10;
             },
             reward(xpGain, intGain) {
-                this.data.xp += xpGain;
-                this.data.stats.int += intGain;
-                // فحص الارتقاء في المستوى
-                if(this.data.xp >= (this.data.level * 100)) {
-                    this.data.xp -= (this.data.level * 100);
-                    this.data.level += 1;
-                    this.data.ap = (this.data.ap || 0) + 3; // إعطاء 3 نقاط حرة
+                this.data.xp = (this.data.xp || 0) + xpGain;
+                
+                if (!this.data.stats) this.data.stats = {int: 10};
+                this.data.stats.int = (this.data.stats.int || 10) + intGain;
+                
+                const currentLvl = this.data.level || 1;
+                const nextXpRequired = currentLvl * 100;
+                
+                if(this.data.xp >= nextXpRequired) {
+                    this.data.xp -= nextXpRequired;
+                    this.data.level = currentLvl + 1;
+                    this.data.ap = (this.data.ap || 0) + 3; // إعطاء 3 نقاط AP عند الارتقاء
                 }
                 this.save();
             }
